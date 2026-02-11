@@ -1,4 +1,4 @@
-import { getList, getListItems, removeItemFromList, deleteList, updateList, updateItem, reorderListItem } from '../lib/db.js'
+import { getList, getListBySlug, getListItems, removeItemFromList, deleteList, updateList, updateItem, reorderListItem } from '../lib/db.js'
 import { getCurrentUser, getSession } from '../lib/auth.js'
 import { showToast, inlineConfirm } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
@@ -20,14 +20,26 @@ async function init() {
   const user = session ? await getCurrentUser() : null
 
   const params = new URLSearchParams(window.location.search)
+  const slug = params.get('list')
   currentListId = params.get('id')
 
-  if (!currentListId) {
+  if (!slug && !currentListId) {
     window.location.href = '/explore.html'
     return
   }
 
   renderNavUser(document.getElementById('user-email'), user)
+
+  // If loaded by slug, resolve to list ID first
+  if (slug && !currentListId) {
+    try {
+      const list = await getListBySlug(slug)
+      currentListId = list.id
+    } catch {
+      window.location.href = '/explore.html'
+      return
+    }
+  }
 
   await loadList(user)
   await loadItems()
@@ -112,7 +124,12 @@ async function loadList(user) {
     currentListName = list.name
     isOwner = user ? list.user_id === user.id : false
     setAllNames(list.name)
-    document.title = `${list.name} - Syft`
+    document.title = `${list.name} — Syft`
+
+    // Update URL to use slug
+    if (list.slug) {
+      history.replaceState(null, '', `/list.html?list=${list.slug}`)
+    }
 
     const profile = list.profiles
     if (profile) {
@@ -165,7 +182,10 @@ async function loadList(user) {
             const updated = await updateList(currentListId, { name: newName })
             currentListName = updated.name
             setAllNames(updated.name)
-            document.title = `${updated.name} - Syft`
+            document.title = `${updated.name} — Syft`
+            if (updated.slug) {
+              history.replaceState(null, '', `/list.html?list=${updated.slug}`)
+            }
           } catch (error) {
             setAllNames(currentListName)
             showToast(error.message, 'error')

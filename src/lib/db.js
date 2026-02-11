@@ -53,6 +53,20 @@ export async function getList(id) {
   return data
 }
 
+export async function getListBySlug(slug) {
+  const { data, error } = await supabase
+    .from('lists')
+    .select(`
+      *,
+      profiles:user_id(id, display_name, avatar_url, email)
+    `)
+    .eq('slug', slug)
+    .single()
+
+  if (error) throw error
+  return data
+}
+
 export async function createList(name) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Not authenticated')
@@ -264,7 +278,7 @@ export async function getAllItems({ from, to } = {}) {
     .select(`
       *,
       list_items(
-        lists:list_id(id, name, user_id, profiles:user_id(id, display_name, avatar_url, email))
+        lists:list_id(id, name, slug, user_id, profiles:user_id(id, display_name, avatar_url, email))
       )
     `)
     .order('created_at', { ascending: false })

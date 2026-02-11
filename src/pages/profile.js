@@ -34,7 +34,7 @@ async function init() {
   const displayName = profile.display_name || profile.email
   const titleEl = document.getElementById('page-title')
   if (titleEl) titleEl.textContent = `${displayName}'s lists`
-  document.title = `${displayName}'s lists - Syft`
+  document.title = `${displayName}'s lists — Syft`
 
   if (profile.avatar_url) {
     const avatarEl = document.getElementById('profile-avatar')
@@ -142,7 +142,7 @@ function renderListCard(list) {
     : ''
 
   return `
-    <a href="/list.html?id=${list.id}" class="group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-end h-full gap-1">
+    <a href="/list.html?list=${list.slug}" class="group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-end h-full gap-1">
       <h3 class="wrap-break-word text-pretty sm:text-xl text-lg leading-[23px] pt-24 font-medium text-ellipsis line-clamp-2 hover:underline mb-1">${escapeHtml(list.name)}</h3>
       <div class="flex items-center gap-1 h-8">
         ${previewCircles}
@@ -200,7 +200,7 @@ function setupCreateButtons() {
         input.disabled = true
         try {
           const list = await createList(name)
-          window.location.href = `/list.html?id=${list.id}`
+          window.location.href = `/list.html?list=${list.slug}`
         } catch (error) {
           showToast(error.message, 'error')
           reset()

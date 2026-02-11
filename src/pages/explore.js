@@ -23,6 +23,7 @@ async function init() {
   const user = session ? await getCurrentUser() : null
 
   renderNavUser(document.getElementById('user-email'), user)
+  document.title = 'Explore — Syft'
 
   setupControls()
   await loadAndRender()
@@ -295,7 +296,7 @@ function renderListCard(list) {
   return `
     <div class="group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-end h-full gap-1">
       <div class="pt-24">
-        <h3 class="wrap-break-word text-pretty sm:text-xl leading-[23px] text-lg font-medium text-ellipsis line-clamp-3 mb-1"><a href="/list.html?id=${list.id}" class="hover:underline">${escapeHtml(list.name)}</a></h3>
+        <h3 class="wrap-break-word text-pretty sm:text-xl leading-[23px] text-lg font-medium text-ellipsis line-clamp-3 mb-1"><a href="/list.html?list=${list.slug}" class="hover:underline">${escapeHtml(list.name)}</a></h3>
         </div>
         <div>
         <div class="flex items-center justify-between">
@@ -322,7 +323,7 @@ function renderItemCard(item) {
         ? `<a href="/profile.html?id=${profile.id}" class="hover:underline font-medium text-gray-800 mr-1">${escapeHtml(profile.display_name || profile.email)}</a>`
         : `<a href="/profile.html?id=${profile.id}" class="hover:underline font-medium text-gray-800 mr-1">${escapeHtml(profile.display_name || profile.email)}</a>`
       : ''
-    metaHtml = `<div class="sm:mt-2 mt-6 border-t pt-2 bg-white border-gray-200 sm:opacity-0 group-hover:opacity-100 transition-opacity gap-1 text-xs text-gray-500 leading-4">${userHtml}<span>in</span><a href="/list.html?id=${list.id}" class="ml-1 hover:underline font-medium text-gray-800">${escapeHtml(list.name)}</a></div>`
+    metaHtml = `<div class="sm:mt-2 mt-6 border-t pt-2 bg-white border-gray-200 sm:opacity-0 group-hover:opacity-100 transition-opacity gap-1 text-xs text-gray-500 leading-4">${userHtml}<span>in</span><a href="/list.html?list=${list.slug || list.id}" class="ml-1 hover:underline font-medium text-gray-800">${escapeHtml(list.name)}</a></div>`
   }
 
   return `
