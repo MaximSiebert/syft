@@ -59,6 +59,11 @@ body.scroll-hidden #add-item-form {
   cursor: pointer;
 }
 
+#list-header:has(.list-name:focus) {
+  background-color: white;
+  border-color: #d1d5db;
+}
+
 .sortable-ghost {
   position: relative;
   opacity: 1 !important;

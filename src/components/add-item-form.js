@@ -15,7 +15,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
         <div class="relative md:col-span-4 sm:col-span-3 col-span-6">
           <input type="text" id="add-item-input" placeholder="Paste a URL or write something short..." required
             class="w-full text-ellipsis bg-white px-3 py-3 text-sm rounded-md transition-colors border-gray-200 hover:border-gray-300 h-12 focus:border-gray-300 border outline-none">
-          <span id="char-counter" class="hidden absolute right-3 top-1/2 -trangray-y-1/2 text-xs text-gray-400"></span>
+          <span id="char-counter" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"></span>
         </div>
         <div class="md:col-span-2 sm:col-span-3 col-span-6 flex sm:gap-3 gap-1">
           <div class="relative grow min-w-0">

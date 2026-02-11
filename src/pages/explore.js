@@ -30,6 +30,8 @@ async function init() {
   setupScrollHide()
 
   if (user) {
+    document.querySelector('main').classList.replace('lg:pb-8', 'sm:pb-18')
+    document.querySelector('main').classList.replace('pb-4', 'pb-31')
     await initAddItemForm({
       onItemAdded: () => resetAndLoad(),
       onListCreated: () => resetAndLoad()
@@ -95,7 +97,8 @@ async function loadPage() {
   try {
     if (currentView === 'lists' || currentView === 'all') {
       if (hasMoreLists) {
-        const lists = await getAllLists({ from: listsOffset, to: listsOffset + PAGE_SIZE - 1 })
+        const sortBy = currentSort === 'created' ? 'created_at' : 'updated_at'
+        const lists = await getAllLists({ from: listsOffset, to: listsOffset + PAGE_SIZE - 1, sortBy })
         newLists = lists
         allLists = [...allLists, ...lists]
         listsOffset += lists.length
@@ -237,7 +240,8 @@ function updateControls() {
 
   document.querySelectorAll('.sort-btn').forEach(btn => {
     const active = btn.dataset.sort === currentSort
-    const label = btn.dataset.sort === 'recent' ? 'Latest' : 'Random'
+    const labels = { recent: 'Updated', created: 'Created', random: 'Random' }
+    const label = labels[btn.dataset.sort] || btn.dataset.sort
     btn.textContent = label + (active ? ' •' : '')
     btn.classList.toggle('text-gray-800', active)
     btn.classList.toggle('font-semibold', active)
@@ -332,7 +336,7 @@ function renderItemCard(item) {
         }
         <div class="justify-between flex flex-col grow">
           <div class="">
-            <h3 class="leading-5 text-ellipsis line-clamp-2 font-medium sm:mb-1 sm:text-base text-sm"><a href="${item.url}" target="_blank" rel="noopener" class="hover:underline">${escapeHtml(item.title)}</a></h3>
+            <h3 class="leading-[24px] text-ellipsis line-clamp-2 font-medium sm:mb-1 sm:text-base text-sm"><a href="${item.url}" target="_blank" rel="noopener" class="hover:underline">${escapeHtml(item.title)}</a></h3>
             ${item.price ? `<p class="sm:text-sm text-xs text-gray-500">${escapeHtml(item.price)}</p>` : item.creator ? `<p class="sm:text-sm text-xs text-gray-500">${escapeHtml(item.creator)}</p>` : ''}
           </div>
         </div>

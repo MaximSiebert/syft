@@ -205,6 +205,18 @@ export async function removeItemFromList(listItemId) {
   if (deleteError) throw deleteError
 }
 
+export async function updateItem(itemId, updates) {
+  const { data, error } = await supabase
+    .from('items')
+    .update(updates)
+    .eq('id', itemId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
 export async function reorderListItem(listId, itemId, newPosition) {
   const { error } = await supabase.rpc('reorder_list_item', {
     p_list_id: listId,
@@ -218,7 +230,7 @@ export async function reorderListItem(listId, itemId, newPosition) {
 // EXPLORE
 // ============================================
 
-export async function getAllLists({ from, to } = {}) {
+export async function getAllLists({ from, to, sortBy = 'updated_at' } = {}) {
   let query = supabase
     .from('lists')
     .select(`
@@ -229,7 +241,7 @@ export async function getAllLists({ from, to } = {}) {
         items:item_id(cover_image_url)
       )
     `)
-    .order('updated_at', { ascending: false })
+    .order(sortBy, { ascending: false })
 
   if (from != null && to != null) query = query.range(from, to)
 
@@ -284,6 +296,41 @@ export async function getProfile(userId) {
 
   if (error) throw error
   return data
+}
+
+export async function migrateAvatarIfNeeded(userId, avatarUrl) {
+  if (!avatarUrl) return avatarUrl
+  if (avatarUrl.includes('/storage/v1/object/public/')) return avatarUrl
+
+  try {
+    const res = await fetch(avatarUrl)
+    if (!res.ok) return avatarUrl
+
+    const contentType = res.headers.get('content-type')?.split(';')[0]?.trim() || 'image/jpeg'
+    const extMap = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' }
+    const ext = extMap[contentType] || 'jpg'
+    const filePath = `${userId}.${ext}`
+
+    const blob = await res.blob()
+    const { error } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, blob, { contentType, upsert: true })
+
+    if (error) return avatarUrl
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath)
+
+    await supabase
+      .from('profiles')
+      .update({ avatar_url: publicUrl })
+      .eq('id', userId)
+
+    return publicUrl
+  } catch {
+    return avatarUrl
+  }
 }
 
 export async function updateProfile(updates) {

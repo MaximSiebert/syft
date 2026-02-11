@@ -1,4 +1,4 @@
-import { getList, getListItems, removeItemFromList, deleteList, updateList, reorderListItem } from '../lib/db.js'
+import { getList, getListItems, removeItemFromList, deleteList, updateList, updateItem, reorderListItem } from '../lib/db.js'
 import { getCurrentUser, getSession } from '../lib/auth.js'
 import { showToast, inlineConfirm } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
@@ -33,10 +33,13 @@ async function init() {
   await loadItems()
   setupObserver()
   setupRemoveHandler()
+  setupInlineEditing()
   setupDragReorder()
   setupScrollHide()
 
   if (user) {
+    document.querySelector('main').classList.replace('lg:pb-8', 'sm:pb-18')
+    document.querySelector('main').classList.replace('pb-4', 'pb-31')
     await initAddItemForm({
       defaultListId: currentListId,
       onItemAdded: (listId) => { if (listId === currentListId) resetAndLoadItems() }
@@ -120,13 +123,24 @@ async function loadList(user) {
         creatorBtn.href = `/profile.html?id=${profile.id}`
         creatorBtn.classList.remove('hidden')
       }
+
+      const authorEl = document.getElementById('list-author')
+      if (authorEl && creatorName) {
+        authorEl.innerHTML = `${profile.avatar_url ? `by <img src="${profile.avatar_url}" alt="" class="ml-1 w-5 h-5 rounded-full">` : ''} <span class="font-semibold text-gray-800 group-hover:underline">${escapeHtml(creatorName)}</span>`
+        authorEl.href = `/profile.html?id=${profile.id}`
+        authorEl.classList.remove('hidden')
+      }
     }
 
     if (isOwner) {
+      const listHeader = document.getElementById('list-header')
+      if (listHeader) {
+        listHeader.classList.add('hover:bg-white', 'hover:border-gray-300')
+      }
+
       document.querySelectorAll('.list-name').forEach(nameEl => {
         nameEl.contentEditable = true
         nameEl.style.cursor = 'text'
-        nameEl.classList.add('hover:bg-white', 'hover:border-gray-300')
 
         nameEl.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
@@ -198,8 +212,8 @@ async function loadItems() {
 
     if (isFirstPage && listItems.length === 0) {
       container.innerHTML = isOwner
-        ? '<div class="relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1"><p class="sm:text-xl text-lg pt-30 font-medium">Add your first item below!</p></div>'
-        : '<div class="relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1"><p class="sm:text-xl text-lg pt-30 font-medium">No items yet</p></div>'
+        ? '<div class="w-full relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1"><p class="sm:text-xl text-lg pt-40 font-medium">Add your first item below</p></div>'
+        : '<div class="w-full relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1"><p class="sm:text-xl text-lg pt-40 font-medium">No items yet</p></div>'
       sentinel.classList.add('hidden')
       return
     }
@@ -211,9 +225,9 @@ async function loadItems() {
         return `
           <div class="min-w-0" data-item-id="${listItem.id}">
             <div class="group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-end h-full gap-1">
-              <h3 class="leading-5 wrap-break-word text-pretty sm:text-xl text-lg pt-24 font-medium">${escapeHtml(item.title)}</h3>
+              <h3 class="item-title leading-[24px] wrap-break-word text-pretty sm:text-xl text-lg pt-24 font-medium outline-none" data-item-id="${item.id}" data-original="${escapeHtml(item.title)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.title)}</h3>
               ${isOwner ? `
-              <div class="h-6 items-center sm:mt-2 mt-6 pt-2 text-xs border-t border-gray-200 transition-opacity">
+              <div class="h-6 items-center mt-2 pt-2 text-xs border-t border-gray-200 transition-opacity">
                 <button class="remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" id="Delete-Bin-3--Streamline-Micro" height="16" width="16">
                     <desc>
@@ -235,14 +249,18 @@ async function loadItems() {
           <div class="group hover:border-gray-300 border bg-white border-gray-200 transition-colors rounded-md p-3 h-full flex flex-col">
             ${item.cover_image_url
               ? `<div><a class="mb-3 grow-0 aspect-square flex justify-center items-center p-6 border border-gray-100 group-hover:border-gray-200 transition-colors rounded-[3px]" href="${item.url}" target="_blank" rel="noopener">
-                  <img src="${item.cover_image_url}" alt="${escapeHtml(item.title)}" class="h-full object-contain ${item.type === 'artist' ? 'rounded-full' : 'rounded-[3px]'}">
-                </a></div>`
+                    <img src="${item.cover_image_url}" alt="${escapeHtml(item.title)}" class="h-full object-contain ${item.type === 'artist' ? 'rounded-full' : 'rounded-[3px]'}">
+                  </a></div>`
               : ''
             }
             <div class="justify-between flex flex-col grow">
               <div>
-                <h3 class="leading-5 wrap-break-word text-pretty text-ellipsis line-clamp-2 font-medium sm:mb-1 sm:text-base text-sm"><a href="${item.url}" target="_blank" rel="noopener" class="hover:underline">${escapeHtml(item.title)}</a></h3>
-                ${item.price ? `<p class="leading-5 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2">${escapeHtml(item.price)}</p>` : item.creator ? `<p class="leading-5 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2">${escapeHtml(item.creator)}</p>` : ''}
+                <h3 class="item-title leading-5 wrap-break-word text-pretty text-ellipsis line-clamp-2 font-medium sm:mb-1 sm:text-base text-sm outline-none" data-item-id="${item.id}" data-original="${escapeHtml(item.title)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${isOwner ? escapeHtml(item.title) : `<a href="${item.url}" target="_blank" rel="noopener" class="hover:underline">${escapeHtml(item.title)}</a>`}</h3>
+                ${item.price
+                  ? `<p class="item-desc leading-5 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2 outline-none" data-item-id="${item.id}" data-field="price" data-original="${escapeHtml(item.price)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.price)}</p>`
+                  : item.creator
+                    ? `<p class="item-desc leading-5 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2 outline-none" data-item-id="${item.id}" data-field="creator" data-original="${escapeHtml(item.creator)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.creator)}</p>`
+                    : ''}
               </div>
               ${isOwner ? `<div class="h-6 items-center sm:mt-3 mt-6 pt-2 text-xs border-t border-gray-200 transition-opacity "><button class="remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" id="Delete-Bin-3--Streamline-Micro" height="16" width="16">
@@ -307,7 +325,7 @@ function setupDragReorder() {
     fallbackClass: 'sortable-drag',
     delay: 200,
     delayOnTouchOnly: true,
-    filter: '.remove-btn',
+    filter: '.remove-btn, .item-title, .item-desc',
     preventOnFilter: false,
     onEnd: async (evt) => {
       if (evt.oldIndex !== evt.newIndex) {
@@ -320,6 +338,57 @@ function setupDragReorder() {
     }
   })
 }
+
+function setupInlineEditing() {
+  if (!isOwner) return
+  const container = document.getElementById('items-container')
+
+  container.addEventListener('keydown', (e) => {
+    const el = e.target.closest('.item-title, .item-desc')
+    if (!el) return
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      el.blur()
+    }
+    if (e.key === 'Escape') {
+      el.textContent = el.dataset.original
+      el.blur()
+    }
+  })
+
+  container.addEventListener('focusout', async (e) => {
+    const el = e.target.closest('.item-title, .item-desc')
+    if (!el) return
+
+    const newValue = el.textContent.trim()
+    const original = el.dataset.original
+    if (!newValue || newValue === original) {
+      el.textContent = original
+      return
+    }
+
+    const itemId = el.dataset.itemId
+    const field = el.classList.contains('item-title') ? 'title' : el.dataset.field
+
+    try {
+      const updated = await updateItem(itemId, { [field]: newValue })
+      el.dataset.original = updated[field]
+      el.textContent = updated[field]
+    } catch (error) {
+      el.textContent = original
+      showToast(error.message, 'error')
+    }
+  })
+}
+
+// Strip formatting on paste in any contenteditable field
+document.addEventListener('paste', (e) => {
+  const el = e.target.closest('[contenteditable="true"]')
+  if (!el) return
+  e.preventDefault()
+  const text = e.clipboardData.getData('text/plain')
+  document.execCommand('insertText', false, text)
+})
 
 function setupObserver() {
   const sentinel = document.getElementById('load-more-sentinel')

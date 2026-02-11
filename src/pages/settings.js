@@ -1,5 +1,5 @@
 import { signOut, deleteAccount, getCurrentUser } from '../lib/auth.js'
-import { getProfile, updateProfile } from '../lib/db.js'
+import { getProfile, updateProfile, migrateAvatarIfNeeded } from '../lib/db.js'
 import { requireAuth } from '../utils/guards.js'
 import { showToast, inlineConfirm } from '../utils/ui.js'
 
@@ -21,6 +21,16 @@ async function init() {
     const profile = await getProfile()
     document.getElementById('user-email').textContent = profile.email
     currentName = profile.display_name || ''
+
+    // Update nav avatar to use profile URL (Storage)
+    if (profile.avatar_url) {
+      avatarEl.innerHTML = `<a href="/profile.html" class="ml-1 block w-10 h-10 flex items-center justify-center hover:bg-white block rounded-full hover:border-gray-300 border-gray-200 border"><img src="${profile.avatar_url}" alt="" class="w-8 h-8 rounded-full"></a>`
+    }
+
+    // Lazily migrate external avatar to Supabase Storage
+    if (profile.avatar_url && !profile.avatar_url.includes('/storage/v1/object/public/')) {
+      migrateAvatarIfNeeded(profile.id, profile.avatar_url).catch(() => {})
+    }
     const nameEl = document.getElementById('user-name')
     nameEl.textContent = currentName || 'Not set'
 
@@ -67,6 +77,15 @@ async function init() {
     } catch (error) {
       showToast(error.message, 'error')
     }
+  })
+
+  // Strip formatting on paste in any contenteditable field
+  document.addEventListener('paste', (e) => {
+    const el = e.target.closest('[contenteditable="true"]')
+    if (!el) return
+    e.preventDefault()
+    const text = e.clipboardData.getData('text/plain')
+    document.execCommand('insertText', false, text)
   })
 
   document.getElementById('delete-account-btn')?.addEventListener('click', async (e) => {

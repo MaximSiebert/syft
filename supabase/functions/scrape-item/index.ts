@@ -497,7 +497,7 @@ async function scrapeYouTubeMusicAlbum(url: string): Promise<Partial<ItemData>> 
   const { tags } = await fetchOgTags(url)
 
   if (tags.title) {
-    const albumByMatch = tags.title.match(/^(.+?)\s*-\s*Album by\s+(.+)$/i)
+    const albumByMatch = tags.title.match(/^(.+?)\s*[-–]\s*Album by\s+(.+)$/i)
     if (albumByMatch) {
       title = albumByMatch[1].trim()
       creator = albumByMatch[2].trim()
@@ -544,7 +544,7 @@ async function scrapeIMDB(url: string): Promise<Partial<ItemData>> {
 
   if (tags.image) cover_image_url = tags.image
 
-  // Extract from JSON-LD: director for movies, numberOfSeasons for shows
+  // Extract from JSON-LD/HTML: director for movies, season count for shows
   if (html) {
     try {
       const ldMatch = html.match(/<script type="application\/ld\+json">([^<]+)<\/script>/)
@@ -552,12 +552,23 @@ async function scrapeIMDB(url: string): Promise<Partial<ItemData>> {
         const ld = JSON.parse(ldMatch[1])
         if (type === 'show' && ld.numberOfSeasons) {
           creator = `${ld.numberOfSeasons} Season${ld.numberOfSeasons === 1 ? '' : 's'}`
-        } else if (ld.director) {
+        } else if (type !== 'show' && ld.director) {
           const directors = Array.isArray(ld.director) ? ld.director : [ld.director]
           creator = directors.map((d: { name?: string }) => d.name).filter(Boolean).join(', ') || null
         }
       }
     } catch { /* JSON-LD parsing failed */ }
+
+    // Fallback: extract season count from inline data for shows
+    if (type === 'show' && !creator) {
+      const seasonsMatch = html.match(/"seasons":\[([^\]]*)\]/)
+      if (seasonsMatch) {
+        const count = (seasonsMatch[1].match(/"number":/g) || []).length
+        if (count > 0) {
+          creator = `${count} Season${count === 1 ? '' : 's'}`
+        }
+      }
+    }
   }
 
   return {
@@ -724,6 +735,66 @@ async function scrapeLCBO(url: string): Promise<Partial<ItemData>> {
 }
 
 // ============================================
+// STORAGE UPLOAD
+// ============================================
+
+const CONTENT_TYPE_TO_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+  'image/svg+xml': 'svg',
+}
+
+async function uploadImageToStorage(
+  supabase: ReturnType<typeof createClient>,
+  imageUrl: string,
+  bucket: string,
+  fileName: string
+): Promise<string | null> {
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
+
+    const res = await fetch(imageUrl, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    })
+    clearTimeout(timeoutId)
+
+    if (!res.ok) {
+      console.error(`Image download failed (${res.status}) for ${imageUrl}`)
+      return null
+    }
+
+    const contentType = res.headers.get('content-type')?.split(';')[0]?.trim() || ''
+    const ext = CONTENT_TYPE_TO_EXT[contentType] || 'jpg'
+    const filePath = `${fileName}.${ext}`
+
+    const blob = await res.blob()
+    const { error } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, blob, { contentType, upsert: true })
+
+    if (error) {
+      console.error(`Storage upload failed for ${filePath}:`, error.message)
+      return null
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(filePath)
+
+    return publicUrl
+  } catch (error) {
+    console.error(`uploadImageToStorage failed for ${imageUrl}:`, error)
+    return null
+  }
+}
+
+// ============================================
 // HANDLER
 // ============================================
 
@@ -859,6 +930,23 @@ serve(async (req) => {
 
     if (insertError || !itemRecord) {
       throw new Error(`Failed to save item: ${insertError?.message}`)
+    }
+
+    // Upload cover image to Storage
+    if (item.cover_image_url) {
+      const storageUrl = await uploadImageToStorage(
+        supabase,
+        item.cover_image_url,
+        'covers',
+        itemRecord.id
+      )
+      if (storageUrl) {
+        await supabase
+          .from('items')
+          .update({ cover_image_url: storageUrl })
+          .eq('id', itemRecord.id)
+        item.cover_image_url = storageUrl
+      }
     }
 
     // Shift existing positions to make room at top

@@ -49,6 +49,8 @@ async function init() {
   setupScrollHide()
 
   if (isOwnProfile) {
+    document.querySelector('main').classList.replace('lg:pb-8', 'sm:pb-18')
+    document.querySelector('main').classList.replace('pb-4', 'pb-31')
     setupCreateButtons()
     await initAddItemForm({
       onListCreated: () => resetAndLoad()
@@ -83,8 +85,8 @@ async function loadLists() {
 
     if (offset === lists.length && lists.length === 0) {
       container.innerHTML = `
-        <div class="relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1">
-          <p class="sm:text-xl text-lg pt-30 font-medium">Create your first list</p>
+        <div class="relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col sm:col-span-1 col-span-2 justify-between h-full gap-1">
+          <p class="leading-[24px] sm:text-xl text-lg pt-30 font-medium">Create your first list</p>
           <button data-expand-full class="absolute top-3 right-3 create-list-btn text-sm hover:border-gray-300 focus:border-gray-300 border border-gray-200 cursor-pointer bg-gray-50 hover:bg-white focus:bg-white transition-colors h-8 w-8 flex items-center justify-center rounded-md">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" id="Add-1--Streamline-Micro" height="12" width="12">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M5.4 0.54v9.72" stroke-width="1.2"></path>
@@ -163,7 +165,7 @@ function setupCreateButtons() {
       btn.classList.remove('w-8', 'h-8', 'hover:bg-white')
       btn.classList.add('h-12', 'px-3', 'bg-white')
       if (expandFull) {
-        btn.classList.add('left-3', 'sm:left-auto')
+        btn.classList.add('left-3')
       } else {
         btn.classList.add('sm:w-60', 'left-3', 'sm:left-auto')
       }
