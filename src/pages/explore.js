@@ -1,0 +1,351 @@
+import { getCurrentUser, getSession } from '../lib/auth.js'
+import { getAllLists, getAllItems } from '../lib/db.js'
+import { showToast } from '../utils/ui.js'
+import { initAddItemForm } from '../components/add-item-form.js'
+import { setupScrollHide } from '../utils/scroll.js'
+import { renderNavUser } from '../utils/nav.js'
+
+const PAGE_SIZE = 64
+
+let allLists = []
+let allItems = []
+let listsOffset = 0
+let itemsOffset = 0
+let hasMoreLists = true
+let hasMoreItems = true
+let isLoading = false
+let currentView = 'lists' // Change to 'all' to re-enable items on explore
+let currentSort = 'recent'
+let currentType = ''
+
+async function init() {
+  const session = await getSession()
+  const user = session ? await getCurrentUser() : null
+
+  renderNavUser(document.getElementById('user-email'), user)
+
+  setupControls()
+  await loadAndRender()
+  setupObserver()
+  setupScrollHide()
+
+  if (user) {
+    await initAddItemForm({
+      onItemAdded: () => resetAndLoad(),
+      onListCreated: () => resetAndLoad()
+    })
+  }
+
+  document.body.classList.add('ready')
+}
+
+function resetState() {
+  allLists = []
+  allItems = []
+  listsOffset = 0
+  itemsOffset = 0
+  hasMoreLists = true
+  hasMoreItems = true
+}
+
+async function resetAndLoad() {
+  isLoading = true
+  resetState()
+  await loadAndRender()
+  isLoading = false
+}
+
+async function loadAndRender() {
+  const container = document.getElementById('explore-container')
+  const sentinel = document.getElementById('load-more-sentinel')
+
+
+
+  container.innerHTML = ''
+
+  if (currentSort === 'random') {
+    sentinel.classList.remove('hidden')
+    await loadAll()
+    renderAll()
+    sentinel.classList.add('hidden')
+  } else {
+    sentinel.classList.remove('hidden')
+    const { newLists, newItems } = await loadPage()
+    appendCards(newLists, newItems)
+    updateSentinel()
+  }
+}
+
+async function loadAll() {
+  try {
+    const [lists, items] = await Promise.all([getAllLists(), getAllItems()])
+    allLists = lists
+    allItems = items
+    hasMoreLists = false
+    hasMoreItems = false
+  } catch (error) {
+    showToast(error.message, 'error')
+  }
+}
+
+async function loadPage() {
+  let newLists = []
+  let newItems = []
+
+  try {
+    if (currentView === 'lists' || currentView === 'all') {
+      if (hasMoreLists) {
+        const lists = await getAllLists({ from: listsOffset, to: listsOffset + PAGE_SIZE - 1 })
+        newLists = lists
+        allLists = [...allLists, ...lists]
+        listsOffset += lists.length
+        if (lists.length < PAGE_SIZE) hasMoreLists = false
+      }
+    }
+
+    if (currentView === 'items' || currentView === 'all') {
+      if (hasMoreItems) {
+        const items = await getAllItems({ from: itemsOffset, to: itemsOffset + PAGE_SIZE - 1 })
+        newItems = items
+        allItems = [...allItems, ...items]
+        itemsOffset += items.length
+        if (items.length < PAGE_SIZE) hasMoreItems = false
+      }
+    }
+  } catch (error) {
+    showToast(error.message, 'error')
+  }
+
+  return { newLists, newItems }
+}
+
+function renderAll() {
+  const container = document.getElementById('explore-container')
+
+  if (currentView === 'lists') {
+    container.innerHTML = shuffle([...allLists]).map(renderListCard).join('')
+  } else if (currentView === 'items') {
+    let items = allItems
+    if (currentType) items = items.filter(item => item.type === currentType)
+    container.innerHTML = shuffle([...items]).map(renderItemCard).join('')
+  } else {
+    const tagged = [
+      ...allLists.map(l => ({ ...l, _type: 'list', _timestamp: l.updated_at })),
+      ...allItems.map(i => ({ ...i, _type: 'item', _timestamp: i.created_at }))
+    ]
+    container.innerHTML = shuffle(tagged).map(entry =>
+      entry._type === 'list' ? renderListCard(entry) : renderItemCard(entry)
+    ).join('')
+  }
+}
+
+function appendCards(newLists, newItems) {
+  const container = document.getElementById('explore-container')
+  let html = ''
+
+  if (currentView === 'lists') {
+    html = newLists.map(renderListCard).join('')
+  } else if (currentView === 'items') {
+    let items = newItems
+    if (currentType) items = items.filter(item => item.type === currentType)
+    html = items.map(renderItemCard).join('')
+  } else {
+    const tagged = [
+      ...newLists.map(l => ({ ...l, _type: 'list', _timestamp: l.updated_at })),
+      ...newItems.map(i => ({ ...i, _type: 'item', _timestamp: i.created_at }))
+    ]
+    tagged.sort((a, b) => new Date(b._timestamp) - new Date(a._timestamp))
+    html = tagged.map(entry =>
+      entry._type === 'list' ? renderListCard(entry) : renderItemCard(entry)
+    ).join('')
+  }
+
+  container.insertAdjacentHTML('beforeend', html)
+}
+
+function hasMore() {
+  if (currentView === 'lists') return hasMoreLists
+  if (currentView === 'items') return hasMoreItems
+  return hasMoreLists || hasMoreItems
+}
+
+function updateSentinel() {
+  const sentinel = document.getElementById('load-more-sentinel')
+  if (hasMore()) {
+    sentinel.classList.remove('hidden')
+  } else {
+    sentinel.classList.add('hidden')
+  }
+}
+
+function setupObserver() {
+  const sentinel = document.getElementById('load-more-sentinel')
+  const observer = new IntersectionObserver(async ([entry]) => {
+    if (!entry.isIntersecting || isLoading || !hasMore()) return
+    isLoading = true
+    const { newLists, newItems } = await loadPage()
+    appendCards(newLists, newItems)
+    updateSentinel()
+    isLoading = false
+  })
+  observer.observe(sentinel)
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  return arr
+}
+
+function setupControls() {
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentView = btn.dataset.view
+      updateControls()
+      resetAndLoad()
+    })
+  })
+
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentSort = btn.dataset.sort
+      updateControls()
+      resetAndLoad()
+    })
+  })
+
+  document.querySelectorAll('.type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentType = btn.dataset.type
+      updateControls()
+      resetAndLoad()
+    })
+  })
+
+  updateControls()
+}
+
+function updateControls() {
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    const active = btn.dataset.view === currentView
+    btn.textContent = btn.dataset.view.charAt(0).toUpperCase() + btn.dataset.view.slice(1) + (active ? ' •' : '')
+    btn.classList.toggle('text-gray-800', active)
+    btn.classList.toggle('font-semibold', active)
+  })
+
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    const active = btn.dataset.sort === currentSort
+    const label = btn.dataset.sort === 'recent' ? 'Latest' : 'Random'
+    btn.textContent = label + (active ? ' •' : '')
+    btn.classList.toggle('text-gray-800', active)
+    btn.classList.toggle('font-semibold', active)
+  })
+
+  const typeControls = document.getElementById('type-controls')
+  const typeControls2 = document.getElementById('type-controls-2')
+  if (typeControls && typeControls2) {
+    if (currentView === 'items') {
+      typeControls.classList.remove('hidden')
+      typeControls2.classList.remove('hidden')
+    } else {
+      typeControls.classList.add('hidden')
+      typeControls2.classList.add('hidden')
+    }
+  }
+
+  const typeLabels = { book: 'Books', movie: 'Movies', show: 'Shows', album: 'Albums', artist: 'Artists', product: 'Products' }
+  document.querySelectorAll('.type-btn').forEach(btn => {
+    const active = btn.dataset.type === currentType
+    const label = btn.dataset.type ? typeLabels[btn.dataset.type] || btn.dataset.type : 'All'
+    btn.textContent = label + (active ? ' •' : '')
+    btn.classList.toggle('text-gray-800', active)
+    btn.classList.toggle('font-semibold', active)
+  })
+}
+
+function renderListCard(list) {
+  const coverImages = (list.preview_items || [])
+    .map(pi => pi.items?.cover_image_url)
+    .filter(Boolean)
+    .slice(0, 3)
+
+  const previewCircles = coverImages.length > 0
+    ? `<div class="flex -space-x-3">
+        ${coverImages.map(url => `
+          <div class="w-8 bg-gray-50 h-8 rounded-full border-3 border-white overflow-hidden bg-gray-100 relative after:inset-shadow-[0_0px_2px_rgba(0,0,0,0.2)] after:rounded-full after:content-[''] after:absolute after:inset-0">
+            <img src="${url}" alt="" class="w-full h-full object-cover block">
+          </div>
+        `).join('')}
+      </div>`
+    : ''
+
+  const profile = list.profiles
+  const creatorHtml = profile
+    ? profile.avatar_url
+      ? `<div class="mt-3 pt-2 text-xs border-t border-gray-200 transition-opacity"><a href="/profile.html?id=${profile.id}" class="text-xs font-medium text-gray-800 hover:underline">${escapeHtml(profile.display_name || profile.email)}</a></div>`
+      : `<div class="mt-3 pt-2 text-xs border-t border-gray-200 transition-opacity"><a href="/profile.html?id=${profile.id}" class="text-xs font-medium text-gray-800 hover:underline">${escapeHtml(profile.display_name || profile.email)}</a></div>`
+    : ''
+
+  return `
+    <div class="group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-end h-full gap-1">
+      <div class="pt-24">
+        <h3 class="wrap-break-word text-pretty sm:text-xl leading-[23px] text-lg font-medium text-ellipsis line-clamp-3 mb-1"><a href="/list.html?id=${list.id}" class="hover:underline">${escapeHtml(list.name)}</a></h3>
+        </div>
+        <div>
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1 h-8">
+            ${previewCircles}
+            <p class="sm:text-sm text-xs text-gray-500">${list.list_items[0].count} ${list.list_items[0].count === 1 ? 'item' : 'items'}</p>
+          </div>
+        </div>
+        ${creatorHtml}
+      </div>
+    </div>
+  `
+}
+
+function renderItemCard(item) {
+  const listItem = item.list_items?.[0]
+  const list = listItem?.lists
+  const profile = list?.profiles
+
+  let metaHtml = ''
+  if (list) {
+    const userHtml = profile
+      ? profile.avatar_url
+        ? `<a href="/profile.html?id=${profile.id}" class="hover:underline font-medium text-gray-800 mr-1">${escapeHtml(profile.display_name || profile.email)}</a>`
+        : `<a href="/profile.html?id=${profile.id}" class="hover:underline font-medium text-gray-800 mr-1">${escapeHtml(profile.display_name || profile.email)}</a>`
+      : ''
+    metaHtml = `<div class="sm:mt-2 mt-6 border-t pt-2 bg-white border-gray-200 sm:opacity-0 group-hover:opacity-100 transition-opacity gap-1 text-xs text-gray-500 leading-4">${userHtml}<span>in</span><a href="/list.html?id=${list.id}" class="ml-1 hover:underline font-medium text-gray-800">${escapeHtml(list.name)}</a></div>`
+  }
+
+  return `
+    <div>
+      <div class="relative group hover:border-gray-300 border bg-white border-gray-200 transition-colors rounded-md p-3 h-full flex flex-col">
+        ${item.cover_image_url
+          ? `<div><a class="mb-3 grow-0 aspect-square flex justify-center items-center p-6 bg-white border border-gray-100 group-hover:border-gray-200 transition-colors rounded-[3px]" href="${item.url}" target="_blank" rel="noopener">
+              <img src="${item.cover_image_url}" alt="${escapeHtml(item.title)}" class="h-full object-contain ${item.type === 'artist' ? 'rounded-full' : 'rounded-[3px]'}">
+            </a></div>`
+          : ''
+        }
+        <div class="justify-between flex flex-col grow">
+          <div class="">
+            <h3 class="leading-5 text-ellipsis line-clamp-2 font-medium sm:mb-1 sm:text-base text-sm"><a href="${item.url}" target="_blank" rel="noopener" class="hover:underline">${escapeHtml(item.title)}</a></h3>
+            ${item.price ? `<p class="sm:text-sm text-xs text-gray-500">${escapeHtml(item.price)}</p>` : item.creator ? `<p class="sm:text-sm text-xs text-gray-500">${escapeHtml(item.creator)}</p>` : ''}
+          </div>
+        </div>
+        ${metaHtml}
+      </div>
+    </div>
+  `
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
+}
+
+init()

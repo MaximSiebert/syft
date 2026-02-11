@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>List - Syft</title>
+  <link rel="stylesheet" href="/src/styles/main.css">
+  <script type="module" src="/src/pages/list.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <nav class="lg:px-8 px-4 fixed top-0 left-0 w-full z-10">
+      <div class="flex w-full justify-between py-3"> 
+        <div class="flex sm:gap-3 gap-2 items-center">
+          <a href="/explore.html" class="font-semibold tracking-wide text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors px-4 h-10 flex items-center text-center rounded-md">
+            Syft
+          </a>
+          <span class="text-gray-300">/</span>
+          <a id="creator-btn" href="#" class="hidden font-semibold tracking-wide text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors px-4 h-10 flex items-center text-center rounded-md">
+          </a>
+        </div>
+        <div class="flex items-center gap-1">
+          <span id="user-email"></span>
+        </div>
+      </div>
+  </nav>
+
+  <main class="lg:px-8 px-4 sm:pb-18 pb-31 pt-16">
+
+    <div class="mb-3 relative">
+      <h1 class="list-name text-2xl font-semibold transition-colors focus:bg-white border-gray-200 focus:border-gray-300 border px-3 pb-3 pt-40 rounded-md outline-none"></h1>
+      <button id="delete-list-btn" class="absolute top-3 right-3 text-sm bg-gray-50 hover:bg-white transition-colors w-8 h-8 flex items-center justify-center rounded-md hover:border-gray-300 border border-gray-200 cursor-pointer ">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" id="Remove-1--Streamline-Micro" height="12" width="12">
+          <path stroke="#000000" stroke-linecap="round" stroke-linejoin="round" d="M0.54 5.4h9.72" stroke-width="1.2"></path>
+        </svg>
+      </button>
+    </div>
+    <div id="items-container" class="flex flex-wrap gap-3">
+    </div>
+    <div id="load-more-sentinel" class="hidden h-full transition-colors border-gray-200 border px-3 pb-3 pt-40 mt-3 rounded-md flex items-end bg-gray-100">
+      <div class="flex items-center gap-2">
+        <svg class="animate-spin sm:w-8 w-6 sm:h-8 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+        </svg>
+        <p class="text-sm font-semibold">Loading...</p>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

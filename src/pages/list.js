@@ -1,0 +1,341 @@
+import { getList, getListItems, removeItemFromList, deleteList, updateList, reorderListItem } from '../lib/db.js'
+import { getCurrentUser, getSession } from '../lib/auth.js'
+import { showToast, inlineConfirm } from '../utils/ui.js'
+import { initAddItemForm } from '../components/add-item-form.js'
+import { setupScrollHide } from '../utils/scroll.js'
+import { renderNavUser } from '../utils/nav.js'
+import Sortable from 'sortablejs'
+
+const PAGE_SIZE = 64
+
+let currentListId = null
+let currentListName = null
+let isOwner = false
+let itemsOffset = 0
+let hasMoreItems = true
+let isLoading = false
+
+async function init() {
+  const session = await getSession()
+  const user = session ? await getCurrentUser() : null
+
+  const params = new URLSearchParams(window.location.search)
+  currentListId = params.get('id')
+
+  if (!currentListId) {
+    window.location.href = '/explore.html'
+    return
+  }
+
+  renderNavUser(document.getElementById('user-email'), user)
+
+  await loadList(user)
+  await loadItems()
+  setupObserver()
+  setupRemoveHandler()
+  setupDragReorder()
+  setupScrollHide()
+
+  if (user) {
+    await initAddItemForm({
+      defaultListId: currentListId,
+      onItemAdded: (listId) => { if (listId === currentListId) resetAndLoadItems() }
+    })
+  }
+
+  if (isOwner) {
+    const deleteBtn = document.getElementById('delete-list-btn')
+    deleteBtn?.addEventListener('click', () => {
+      if (deleteBtn.dataset.confirming === 'true') return
+
+      const originalHtml = deleteBtn.innerHTML
+      deleteBtn.dataset.confirming = 'true'
+
+      // Expand button
+      deleteBtn.classList.remove('w-8', 'h-8', 'hover:bg-white')
+      deleteBtn.classList.add('sm:w-60', 'sm:left-auto', 'left-3', 'h-12', 'px-3', 'bg-white')
+
+      // Replace icon with confirm input
+      const input = document.createElement('input')
+      input.type = 'text'
+      input.placeholder = 'Type "delete" to confirm...'
+      input.className = 'w-full h-full bg-transparent outline-none text-sm'
+      deleteBtn.innerHTML = ''
+      deleteBtn.appendChild(input)
+      input.focus()
+
+      const reset = () => {
+        deleteBtn.classList.remove('sm:w-60', 'left-3', 'sm:left-3', 'h-12', 'px-3')
+        deleteBtn.classList.add('w-8', 'h-8')
+        deleteBtn.innerHTML = originalHtml
+        delete deleteBtn.dataset.confirming
+      }
+
+      input.addEventListener('keydown', async (e) => {
+        if (e.key === 'Escape') return reset()
+        if (e.key !== 'Enter') return
+        if (input.value.trim().toLowerCase() !== 'delete') return reset()
+
+        input.disabled = true
+        try {
+          await deleteList(currentListId)
+          window.location.href = '/profile.html'
+        } catch (error) {
+          showToast(error.message, 'error')
+          reset()
+        }
+      })
+
+      input.addEventListener('blur', () => reset())
+    })
+  } else {
+    // Read-only: hide owner controls
+    const deleteBtn = document.getElementById('delete-list-btn')
+    if (deleteBtn) deleteBtn.style.display = 'none'
+  }
+
+  document.body.classList.add('ready')
+}
+
+function setAllNames(name) {
+  document.querySelectorAll('.list-name').forEach(el => {
+    el.textContent = name
+  })
+}
+
+async function loadList(user) {
+  try {
+    const list = await getList(currentListId)
+    currentListName = list.name
+    isOwner = user ? list.user_id === user.id : false
+    setAllNames(list.name)
+    document.title = `${list.name} - Syft`
+
+    const profile = list.profiles
+    if (profile) {
+      const creatorBtn = document.getElementById('creator-btn')
+      const creatorName = profile.display_name || profile.email || ''
+      if (creatorBtn && creatorName) {
+        creatorBtn.textContent = creatorName
+        creatorBtn.href = `/profile.html?id=${profile.id}`
+        creatorBtn.classList.remove('hidden')
+      }
+    }
+
+    if (isOwner) {
+      document.querySelectorAll('.list-name').forEach(nameEl => {
+        nameEl.contentEditable = true
+        nameEl.style.cursor = 'text'
+        nameEl.classList.add('hover:bg-white', 'hover:border-gray-300')
+
+        nameEl.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            nameEl.blur()
+          }
+          if (e.key === 'Escape') {
+            setAllNames(currentListName)
+            nameEl.blur()
+          }
+        })
+
+        nameEl.addEventListener('blur', async () => {
+          const newName = nameEl.textContent.trim()
+          if (!newName) {
+            setAllNames(currentListName)
+            return
+          }
+          if (newName === currentListName) return
+
+          try {
+            const updated = await updateList(currentListId, { name: newName })
+            currentListName = updated.name
+            setAllNames(updated.name)
+            document.title = `${updated.name} - Syft`
+          } catch (error) {
+            setAllNames(currentListName)
+            showToast(error.message, 'error')
+          }
+        })
+      })
+    } else {
+      // Show creator info for non-owned lists
+      const profile = list.profiles
+      if (profile) {
+        const creatorEl = document.getElementById('list-creator')
+        if (creatorEl) {
+          creatorEl.innerHTML = profile.avatar_url
+            ? `<img src="${profile.avatar_url}" alt="" class="w-6 h-6 rounded-full">`
+            : `<span class="text-sm text-gray-500">${escapeHtml(profile.display_name || profile.email)}</span>`
+        }
+      }
+    }
+  } catch (error) {
+    showToast('List not found', 'error')
+    window.location.href = '/profile.html'
+  }
+}
+
+async function resetAndLoadItems() {
+  isLoading = true
+  itemsOffset = 0
+  hasMoreItems = true
+  document.getElementById('items-container').innerHTML = ''
+  await loadItems()
+  isLoading = false
+}
+
+async function loadItems() {
+  const container = document.getElementById('items-container')
+  const sentinel = document.getElementById('load-more-sentinel')
+  const isFirstPage = itemsOffset === 0
+
+  try {
+    sentinel.classList.remove('hidden')
+    const listItems = await getListItems(currentListId, { from: itemsOffset, to: itemsOffset + PAGE_SIZE - 1 })
+    itemsOffset += listItems.length
+    if (listItems.length < PAGE_SIZE) hasMoreItems = false
+
+    if (isFirstPage && listItems.length === 0) {
+      container.innerHTML = isOwner
+        ? '<div class="relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1"><p class="sm:text-xl text-lg pt-30 font-medium">Add your first item below!</p></div>'
+        : '<div class="relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1"><p class="sm:text-xl text-lg pt-30 font-medium">No items yet</p></div>'
+      sentinel.classList.add('hidden')
+      return
+    }
+
+    const html = listItems.map(listItem => {
+      const item = listItem.items
+
+      if (item.type === 'text') {
+        return `
+          <div class="min-w-0" data-item-id="${listItem.id}">
+            <div class="group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-end h-full gap-1">
+              <h3 class="leading-5 wrap-break-word text-pretty sm:text-xl text-lg pt-24 font-medium">${escapeHtml(item.title)}</h3>
+              ${isOwner ? `
+              <div class="h-6 items-center sm:mt-2 mt-6 pt-2 text-xs border-t border-gray-200 transition-opacity">
+                <button class="remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" id="Delete-Bin-3--Streamline-Micro" height="16" width="16">
+                    <desc>
+                      Delete Bin 3 Streamline Icon: https://streamlinehq.com
+                    </desc>
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M1.08 3.6057600000000005h12.240000000000002" stroke-width="1.6"></path>
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M10.440000000000001 13.680000000000001h-6.48a1.4400000000000002 1.4400000000000002 0 0 1 -1.4400000000000002 -1.4400000000000002v-8.64h9.360000000000001v8.64a1.4400000000000002 1.4400000000000002 0 0 1 -1.4400000000000002 1.4400000000000002Z" stroke-width="1.6"></path>
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M4.6195200000000005 3.6000000000000005v-0.32976000000000005a2.55024 2.55024 0 1 1 5.10048 0V3.6000000000000005" stroke-width="1.6"></path>
+                  </svg>
+                </button>
+              </div>` : ''}
+            </div>
+          </div>
+        `
+      }
+
+      return `
+        <div class="min-w-0" data-item-id="${listItem.id}">
+          <div class="group hover:border-gray-300 border bg-white border-gray-200 transition-colors rounded-md p-3 h-full flex flex-col">
+            ${item.cover_image_url
+              ? `<div><a class="mb-3 grow-0 aspect-square flex justify-center items-center p-6 border border-gray-100 group-hover:border-gray-200 transition-colors rounded-[3px]" href="${item.url}" target="_blank" rel="noopener">
+                  <img src="${item.cover_image_url}" alt="${escapeHtml(item.title)}" class="h-full object-contain ${item.type === 'artist' ? 'rounded-full' : 'rounded-[3px]'}">
+                </a></div>`
+              : ''
+            }
+            <div class="justify-between flex flex-col grow">
+              <div>
+                <h3 class="leading-5 wrap-break-word text-pretty text-ellipsis line-clamp-2 font-medium sm:mb-1 sm:text-base text-sm"><a href="${item.url}" target="_blank" rel="noopener" class="hover:underline">${escapeHtml(item.title)}</a></h3>
+                ${item.price ? `<p class="leading-5 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2">${escapeHtml(item.price)}</p>` : item.creator ? `<p class="leading-5 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2">${escapeHtml(item.creator)}</p>` : ''}
+              </div>
+              ${isOwner ? `<div class="h-6 items-center sm:mt-3 mt-6 pt-2 text-xs border-t border-gray-200 transition-opacity "><button class="remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" id="Delete-Bin-3--Streamline-Micro" height="16" width="16">
+                  <desc>
+                    Delete Bin 3 Streamline Icon: https://streamlinehq.com
+                  </desc>
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M1.08 3.6057600000000005h12.240000000000002" stroke-width="1.6"></path>
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M10.440000000000001 13.680000000000001h-6.48a1.4400000000000002 1.4400000000000002 0 0 1 -1.4400000000000002 -1.4400000000000002v-8.64h9.360000000000001v8.64a1.4400000000000002 1.4400000000000002 0 0 1 -1.4400000000000002 1.4400000000000002Z" stroke-width="1.6"></path>
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M4.6195200000000005 3.6000000000000005v-0.32976000000000005a2.55024 2.55024 0 1 1 5.10048 0V3.6000000000000005" stroke-width="1.6"></path>
+                </svg>
+              </button></div>` : ''}
+            </div>
+          </div>
+        </div>
+      `
+    }).join('')
+
+    container.insertAdjacentHTML('beforeend', html)
+
+    if (hasMoreItems) {
+      sentinel.classList.remove('hidden')
+    } else {
+      sentinel.classList.add('hidden')
+    }
+  } catch (error) {
+    if (isFirstPage) container.innerHTML = '<p>Failed to load items</p>'
+    showToast(error.message, 'error')
+    sentinel.classList.add('hidden')
+  }
+}
+
+function setupRemoveHandler() {
+  if (!isOwner) return
+  const container = document.getElementById('items-container')
+  container.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.remove-btn')
+    if (!btn) return
+    if (!inlineConfirm(btn)) return
+
+    try {
+      await removeItemFromList(btn.dataset.itemId)
+      showToast('Item removed', 'success')
+      await resetAndLoadItems()
+    } catch (error) {
+      showToast(error.message, 'error')
+    }
+  })
+}
+
+function setupDragReorder() {
+  if (!isOwner) return
+
+  const container = document.getElementById('items-container')
+  container.classList.add('reorderable')
+
+  Sortable.create(container, {
+    animation: 150,
+    ghostClass: 'sortable-ghost',
+    dragClass: 'sortable-drag',
+    forceFallback: true,
+    fallbackOnBody: true,
+    fallbackClass: 'sortable-drag',
+    delay: 200,
+    delayOnTouchOnly: true,
+    filter: '.remove-btn',
+    preventOnFilter: false,
+    onEnd: async (evt) => {
+      if (evt.oldIndex !== evt.newIndex) {
+        try {
+          await reorderListItem(currentListId, evt.item.dataset.itemId, evt.newIndex)
+        } catch {
+          await resetAndLoadItems()
+        }
+      }
+    }
+  })
+}
+
+function setupObserver() {
+  const sentinel = document.getElementById('load-more-sentinel')
+  const observer = new IntersectionObserver(async ([entry]) => {
+    if (!entry.isIntersecting || isLoading || !hasMoreItems) return
+    isLoading = true
+    await loadItems()
+    isLoading = false
+  })
+  observer.observe(sentinel)
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
+}
+
+init()

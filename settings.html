@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Lists</title>
+  <link rel="stylesheet" href="/src/styles/main.css">
+  <script type="module" src="/src/pages/settings.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <nav class="lg:px-8 px-4 fixed top-0 left-0 w-full z-10">
+      <div class="flex w-full justify-between py-3">
+        <div class="flex sm:gap-3 gap-2 items-center">
+          <a href="/explore.html" class="font-semibold tracking-wide text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors px-4 h-10 flex items-center text-center rounded-md">
+            Syft
+          </a>
+        </div>
+        <div class="flex items-center gap-1">
+          <span id="user-avatar"></span>
+        </div>
+      </div>
+  </nav>
+
+  <main class="sm:min-h-screen flex items-center justify-center">
+    <div class="sm:max-w-md mx-auto lg:px-8 px-4 pt-16 pb-4 w-full">
+      <h1 class="h-full font-semibold text-2xl transition-colors border-gray-200 border px-3 pb-3 mb-3 pt-40 rounded-md">Settings</h1>
+
+      <div class="p-4 mb-3 border-gray-200 border rounded-md">
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between items-baseline"><p class="text-gray-500">Email</p> <span id="user-email" class="block font-medium px-2 py-1"></span></div>
+          <div class="flex justify-between items-baseline"><p class="text-gray-500">Name</p> <span id="user-name" contenteditable="true" class="block px-2 py-1 font-medium outline-none cursor-text hover:bg-white hover:border-gray-300 border border-transparent focus:bg-white focus:border-gray-300 rounded transition-colors"></span></div>
+        </div>
+      </div>
+
+      <div class="">
+        <button id="signout-btn" class="cursor-pointer font-medium mb-12 w-full text-sm bg-gray-50 hover:bg-white transition-colors px-3 py-2 rounded-md hover:border-gray-300 border border-gray-200">
+          Sign out
+        </button>
+        <button id="delete-account-btn" class="cursor-pointer font-medium w-full text-sm bg-red-50 text-red-600 transition-colors px-3 py-2 rounded-md hover:border-red-300 border border-transparent">
+          Delete account
+        </button>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+body {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+body.ready {
+  opacity: 1;
+}
+
+nav,
+#add-item-form {
+  transition: transform 300ms ease;
+}
+
+body.scroll-hidden nav {
+  transform: trangrayY(-100%);
+}
+
+body.scroll-hidden #add-item-form {
+  transform: trangrayY(100%);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* List item flex widths */
+#items-container > [data-item-id] {
+  flex: 0 0 calc(50% - 0.375rem);
+}
+@media (min-width: 768px) {
+  #items-container > [data-item-id] {
+    flex: 0 0 calc(33.333% - 0.5rem);
+  }
+}
+@media (min-width: 1024px) {
+  #items-container > [data-item-id] {
+    flex: 0 0 calc(25% - 0.5625rem);
+  }
+}
+@media (min-width: 1280px) {
+  #items-container > [data-item-id] {
+    flex: 0 0 calc(20% - 0.6rem);
+  }
+}
+
+#items-container.reorderable [data-item-id] {
+  cursor: grab;
+}
+
+#items-container.reorderable .remove-btn {
+  cursor: pointer;
+}
+
+.sortable-ghost {
+  position: relative;
+  opacity: 1 !important;
+}
+.sortable-ghost > * {
+  visibility: hidden;
+}
+.sortable-ghost::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #E6E7EB;
+  border-radius: 0.375rem;
+}
+
+.sortable-drag {
+  rotate: 2deg;
+  scale: 1.02;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  opacity: 0.9;
+}

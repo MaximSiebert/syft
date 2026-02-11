@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(supabase functions deploy:*)",
+      "WebFetch(domain:www.youtube.com)",
+      "WebFetch(domain:api.microlink.io)",
+      "WebFetch(domain:www.justwatch.com)",
+      "WebFetch(domain:www.qobuz.com)",
+      "WebFetch(domain:www.amazon.ca)",
+      "WebFetch(domain:music.apple.com)",
+      "WebFetch(domain:itunes.apple.com)"
+    ]
+  }
+}

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explore - Syft</title>
+  <link rel="stylesheet" href="/src/styles/main.css">
+  <script type="module" src="/src/pages/explore.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <nav class="lg:px-8 px-4 fixed left-0 top-0 w-full z-10">
+    <div class="flex w-full justify-between items-center py-3">
+      <div class="flex sm:gap-3 gap-2 items-center">
+        <a href="/explore.html" class="font-semibold tracking-wide text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors px-4 h-10 flex items-center text-center rounded-md">
+          Syft
+        </a>
+        <!-- <span class="text-gray-300">/</span> -->
+      </div>
+      <div class="flex items-center gap-1">
+        <span id="user-email"></span>
+      </div>
+    </div>
+  </nav>
+
+  <main class="lg:px-8 px-4 sm:pb-18 pb-31 pt-16">
+
+    <div class="mb-3 relative grid gap-3 xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2">
+      <h1 class="xl:col-span-2 h-full font-semibold text-2xl transition-colors border-gray-200 border px-3 pb-3 pt-40 rounded-md self-baseline-last">Explore</h1>
+      <div id="controls" class="h-full xl:col-span-3 lg:col-span-3 md:col-span-2 items-end grid lg:grid-cols-6 grid-cols-1 gap-x-3 text-sm text-gray-500 border-gray-200 border px-3 pb-3 pt-3 rounded-md">
+        <!-- View controls (uncomment to re-enable items on explore)
+        <div id="view-controls" class="gap-3">
+          <button class="view-btn cursor-pointer block hover:text-gray-800 transition-colors" data-view="all">All</button>
+          <button class="view-btn cursor-pointer block hover:text-gray-800 transition-colors" data-view="lists">Lists</button>
+          <button class="view-btn cursor-pointer block hover:text-gray-800 transition-colors" data-view="items">Items</button>
+        </div>
+        -->
+        <div id="sort-controls" class="gap-3">
+          <button class="sort-btn cursor-pointer block hover:text-gray-800 transition-colors" data-sort="recent">Recent</button>
+          <button class="sort-btn cursor-pointer block hover:text-gray-800 transition-colors" data-sort="random">Random</button>
+        </div>
+        <!-- Type controls (uncomment to re-enable items on explore)
+        <div id="type-controls" class="gap-3 hidden">
+          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="">All</button>
+          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="book">Books</button>
+          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="movie">Movies</button>
+          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="show">Shows</button>
+        </div>
+        <div id="type-controls-2" class="gap-3 hidden">
+          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="artist">Artists</button>
+          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="album">Albums</button>
+          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="product">Products</button>
+        </div>
+        -->
+      </div>
+    </div>
+
+
+    <div id="explore-container" class="grid gap-3 xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2"></div>
+    <div id="load-more-sentinel" class="h-full transition-colors border-gray-200 border px-3 pb-3 pt-40 mt-3 rounded-md flex items-end bg-gray-100">
+      <div class="flex items-center gap-2">
+        <svg class="animate-spin sm:w-8 w-6 sm:h-8 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+          <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+        </svg>
+        <p class="text-sm font-semibold" >Loading...</p>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
