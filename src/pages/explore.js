@@ -37,9 +37,28 @@ async function init() {
       onItemAdded: () => resetAndLoad(),
       onListCreated: () => resetAndLoad()
     })
+
+    // Handle Web Share Target: pre-fill input with shared URL
+    const params = new URLSearchParams(window.location.search)
+    const sharedUrl = params.get('url') || extractUrl(params.get('text'))
+    if (sharedUrl) {
+      const input = document.getElementById('add-item-input')
+      if (input) {
+        input.value = sharedUrl
+        input.dispatchEvent(new Event('input'))
+        input.focus()
+      }
+      history.replaceState(null, '', window.location.pathname)
+    }
   }
 
   document.body.classList.add('ready')
+}
+
+function extractUrl(text) {
+  if (!text) return null
+  const match = text.match(/https?:\/\/[^\s]+/)
+  return match ? match[0] : null
 }
 
 function resetState() {

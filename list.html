@@ -8,6 +8,8 @@
   <meta property="og:title" content="Syft">
   <meta property="og:description" content="Collect and share the things you love.">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#f9fafb">
+  <link rel="manifest" href="/manifest.json">
   <title>Syft</title>
   <link rel="stylesheet" href="/src/styles/main.css">
   <script type="module" src="/src/pages/list.js"></script>
@@ -52,5 +54,6 @@
       </div>
     </div>
   </main>
+  <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')</script>
 </body>
 </html>
