@@ -69,7 +69,7 @@ const urlTypes: UrlType[] = [
   { type: 'location', source: 'googlemaps', pattern: /^https?:\/\/(www\.)?google\.[a-z.]+\/maps\/place\/.+/ },
 ]
 
-const PRERENDER_SOURCES = new Set(['googlemaps'])
+const PRERENDER_SOURCES = new Set<string>([])
 
 function detectUrlType(url: string): UrlType {
   for (const urlType of urlTypes) {
@@ -735,6 +735,80 @@ async function scrapeLCBO(url: string): Promise<Partial<ItemData>> {
 }
 
 // ============================================
+// GOOGLE MAPS (Places API — real place photos)
+// ============================================
+
+async function scrapeGoogleMaps(resolvedUrl: string): Promise<Partial<ItemData>> {
+  const apiKey = Deno.env.get('GOOGLE_PLACES_API_KEY')
+
+  // Extract place name from URL path: /maps/place/Place+Name/@lat,lng,...
+  const placeMatch = resolvedUrl.match(/\/maps\/place\/([^/@]+)/)
+  const query = placeMatch
+    ? decodeURIComponent(placeMatch[1].replace(/\+/g, ' '))
+    : null
+
+  // Extract coordinates for location bias: /@45.4371,-75.6438,...
+  const coordMatch = resolvedUrl.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)
+  const lat = coordMatch ? parseFloat(coordMatch[1]) : null
+  const lng = coordMatch ? parseFloat(coordMatch[2]) : null
+
+  if (!query || !apiKey) {
+    return { title: query || 'Google Maps Location' }
+  }
+
+  try {
+    const body: Record<string, unknown> = { textQuery: query }
+    // Use coordinates from the URL to bias search to the correct location
+    if (lat && lng) {
+      body.locationBias = {
+        circle: { center: { latitude: lat, longitude: lng }, radius: 500.0 },
+      }
+    }
+
+    const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': apiKey,
+        'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.photos',
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!res.ok) {
+      console.error(`Places API returned ${res.status} for query: ${query}`)
+      return { title: query }
+    }
+
+    const data = await res.json()
+    const place = data.places?.[0]
+    if (!place) return { title: query }
+
+    const title = place.displayName?.text || query
+    // Clean address: "465 Parkdale Ave, Ottawa, ON K1Y 1H5, Canada" → "465 Parkdale Ave, Ottawa, Canada"
+    let creator: string | null = null
+    if (place.formattedAddress) {
+      const parts = place.formattedAddress.split(', ')
+      if (parts.length >= 4) {
+        parts.splice(-2, 1) // Remove province/state + postal code segment
+      }
+      creator = parts.join(', ')
+    }
+
+    let cover_image_url: string | null = null
+    if (place.photos?.length > 0) {
+      const photoName = place.photos[0].name
+      cover_image_url = `https://places.googleapis.com/v1/${photoName}/media?maxHeightPx=800&maxWidthPx=800&key=${apiKey}`
+    }
+
+    return { title, creator, cover_image_url }
+  } catch (error) {
+    console.error(`Places API failed for ${query}:`, error)
+    return { title: query }
+  }
+}
+
+// ============================================
 // STORAGE UPLOAD
 // ============================================
 
@@ -863,11 +937,26 @@ serve(async (req) => {
       )
     }
 
-    // For Google Maps short URLs, resolve via Microlink first to get the real URL
+    // For Google Maps short URLs, resolve to get the full URL
     if (urlType.source === 'googlemaps' && (url.includes('goo.gl') || url.includes('maps.app'))) {
-      const resolveResult = await fetchMicrolink(url, true)
-      if (resolveResult?.data?.url) {
-        normalizedUrl = normalizeUrl(resolveResult.data.url, urlType.source)
+      try {
+        // Try simple redirect resolution first (faster than Microlink)
+        const redirectRes = await fetch(url, { method: 'HEAD', redirect: 'follow' })
+        if (redirectRes.url && redirectRes.url.includes('/maps/place/')) {
+          normalizedUrl = normalizeUrl(redirectRes.url, urlType.source)
+        } else {
+          // Fall back to Microlink prerender for JS-based redirects
+          const resolveResult = await fetchMicrolink(url, true)
+          if (resolveResult?.data?.url) {
+            normalizedUrl = normalizeUrl(resolveResult.data.url, urlType.source)
+          }
+        }
+      } catch {
+        // Fall back to Microlink prerender
+        const resolveResult = await fetchMicrolink(url, true)
+        if (resolveResult?.data?.url) {
+          normalizedUrl = normalizeUrl(resolveResult.data.url, urlType.source)
+        }
       }
     }
 
@@ -890,10 +979,10 @@ serve(async (req) => {
       scraped = await scrapeAmazon(normalizedUrl)
     } else if (urlType.source === 'lcbo') {
       scraped = await scrapeLCBO(url)
+    } else if (urlType.source === 'googlemaps') {
+      scraped = await scrapeGoogleMaps(normalizedUrl)
     } else {
-      // For Google Maps, fetch metadata from the resolved full URL (not the short URL)
-      const fetchUrl = urlType.source === 'googlemaps' ? normalizedUrl : url
-      const microlinkResult = await fetchMicrolink(fetchUrl, PRERENDER_SOURCES.has(urlType.source))
+      const microlinkResult = await fetchMicrolink(url, PRERENDER_SOURCES.has(urlType.source))
 
       if (microlinkResult) {
         scraped = mapMicrolinkToItemData(microlinkResult.data, urlType, normalizedUrl)
