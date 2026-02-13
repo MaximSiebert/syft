@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase.js'
 
-const userIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" id="User-Single--Streamline-Micro" height="16" width="16">
+const userIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" id="User-Single--Streamline-Micro" height="12" width="12">
   <desc>
     User Single Streamline Icon: https://streamlinehq.com
   </desc>
