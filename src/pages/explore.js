@@ -314,8 +314,8 @@ function renderListCard(list) {
 
   return `
     <div class="group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-end h-full gap-1">
-      <div class="pt-24">
-        <h3 class="wrap-break-word text-pretty sm:text-xl leading-5 pb-[2px] text-lg font-medium text-ellipsis line-clamp-3 mb-1"><a href="/list.html?list=${list.slug}" class="hover:underline">${escapeHtml(list.name)}</a></h3>
+      <div class="">
+        <h3 class="wrap-break-word text-pretty sm:text-xl leading-5 pb-[2px] text-lg font-medium text-ellipsis line-clamp-3 mb-1"><a href="/list.html?list=${list.slug}" class="pt-24 block hover:underline">${escapeHtml(list.name)}</a></h3>
         </div>
         <div>
         <div class="flex items-center justify-between">
