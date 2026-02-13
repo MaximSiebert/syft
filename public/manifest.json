@@ -1,7 +1,7 @@
 {
   "name": "Syft",
   "short_name": "Syft",
-  "description": "Make lists for anything and everything",
+  "description": "Lists for anything and everything",
   "start_url": "/",
   "display": "standalone",
   "scope": "/",
