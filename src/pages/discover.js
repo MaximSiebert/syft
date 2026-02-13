@@ -262,7 +262,7 @@ function updateControls() {
     const active = btn.dataset.sort === currentSort
     const labels = { recent: 'Updated', created: 'Created', random: 'Random' }
     const label = labels[btn.dataset.sort] || btn.dataset.sort
-    btn.innerHTML = label + (active ? ' <span class="active-dot w-1.5 h-1.5 bg-green-500 block rounded-full mb-1.5"></span>' : '')
+    btn.innerHTML = `<span class="active-dot w-1.5 h-1.5 block rounded-full mb-1.5 ${active ? 'bg-green-500 border border-green-500' : 'bg-gray-50 border border-gray-400'}"></span>` + label
     btn.classList.toggle('text-gray-800', active)
     btn.classList.toggle('font-semibold', active)
   })
