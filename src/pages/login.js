@@ -46,7 +46,7 @@ async function init() {
     const isSignUp = form.dataset.mode === 'signup'
     form.dataset.mode = isSignUp ? 'signin' : 'signup'
 
-    document.getElementById('submit-btn').textContent = isSignUp ? 'Sign In' : 'Sign Up'
+    document.getElementById('submit-btn').textContent = isSignUp ? 'Sign in' : 'Sign up'
     document.getElementById('toggle-mode').textContent = isSignUp
       ? "Don't have an account? Sign up"
       : 'Already have an account? Sign in'
