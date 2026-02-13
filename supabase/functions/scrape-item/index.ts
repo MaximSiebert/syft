@@ -39,6 +39,7 @@ interface MicrolinkResponse {
 }
 
 const urlTypes: UrlType[] = [
+  { type: 'book', source: 'storygraph', pattern: /^https?:\/\/(app\.)?thestorygraph\.com\/books\/.+/ },
   { type: 'book', source: 'goodreads', pattern: /^https?:\/\/(www\.)?goodreads\.com\/book\/show\/.+/ },
   { type: 'product', source: 'amazon', pattern: /^https?:\/\/(www\.)?amazon\.(com|ca|co\.uk|com\.au|de|fr|es|it|nl|se|pl|co\.jp|com\.br|com\.mx|in|sg)\/.+\/(dp|gp\/product)\/[A-Z0-9]+/ },
   { type: 'book', source: 'indigo', pattern: /^https?:\/\/(www\.)?indigo\.ca\/.+\/\d+\.html/ },
@@ -167,6 +168,7 @@ function cleanTitle(title: string, source: string): string {
     youtubemusic: [/\s*[-–|]\s*YouTube Music$/i],
     tidal: [/\s*[-–|]\s*TIDAL$/i, /\s+on TIDAL$/i],
     qobuz: [/\s*[-–|]\s*Qobuz$/i],
+    storygraph: [/\s+by\s+.+$/i],
     goodreads: [/\s*\|\s*Goodreads$/i, /\s+by\s+.+\s*\|\s*Goodreads$/i],
     googlemaps: [/\s*-\s*Explore in Google Maps$/i, /\s*[-–·]\s*Google Maps$/i, /\s*-\s*Google$/i],
   }
@@ -1030,11 +1032,15 @@ serve(async (req) => {
         itemRecord.id
       )
       if (storageUrl) {
-        await supabase
+        const { error: updateError } = await supabase
           .from('items')
           .update({ cover_image_url: storageUrl })
           .eq('id', itemRecord.id)
-        item.cover_image_url = storageUrl
+        if (updateError) {
+          console.error(`Failed to update cover_image_url for ${itemRecord.id}:`, updateError.message)
+        } else {
+          item.cover_image_url = storageUrl
+        }
       }
     }
 

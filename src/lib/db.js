@@ -198,7 +198,7 @@ export async function addTextItemToList(text, listId) {
 export async function removeItemFromList(listItemId) {
   const { data: listItem, error: fetchError } = await supabase
     .from('list_items')
-    .select('item_id')
+    .select('item_id, items(cover_image_url)')
     .eq('id', listItemId)
     .single()
 
@@ -210,6 +210,15 @@ export async function removeItemFromList(listItemId) {
     .eq('id', listItemId)
 
   if (removeError) throw removeError
+
+  // Delete cover image from storage
+  const coverUrl = listItem.items?.cover_image_url
+  if (coverUrl && coverUrl.includes('/storage/v1/object/public/covers/')) {
+    const filePath = coverUrl.split('/covers/').pop()
+    if (filePath) {
+      await supabase.storage.from('covers').remove([filePath])
+    }
+  }
 
   const { error: deleteError } = await supabase
     .from('items')
