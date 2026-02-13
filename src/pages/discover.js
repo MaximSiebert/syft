@@ -253,7 +253,7 @@ function setupControls() {
 function updateControls() {
   document.querySelectorAll('.view-btn').forEach(btn => {
     const active = btn.dataset.view === currentView
-    btn.textContent = btn.dataset.view.charAt(0).toUpperCase() + btn.dataset.view.slice(1) + (active ? ' •' : '')
+    btn.innerHTML = btn.dataset.view.charAt(0).toUpperCase() + btn.dataset.view.slice(1) + (active ? ' <span class="active-dot w-1.5 h-1.5 bg-green-500 block rounded-full mb-1.5"></span>' : '')
     btn.classList.toggle('text-gray-800', active)
     btn.classList.toggle('font-semibold', active)
   })
@@ -262,7 +262,7 @@ function updateControls() {
     const active = btn.dataset.sort === currentSort
     const labels = { recent: 'Updated', created: 'Created', random: 'Random' }
     const label = labels[btn.dataset.sort] || btn.dataset.sort
-    btn.textContent = label + (active ? ' •' : '')
+    btn.innerHTML = label + (active ? ' <span class="active-dot w-1.5 h-1.5 bg-green-500 block rounded-full mb-1.5"></span>' : '')
     btn.classList.toggle('text-gray-800', active)
     btn.classList.toggle('font-semibold', active)
   })
@@ -283,7 +283,7 @@ function updateControls() {
   document.querySelectorAll('.type-btn').forEach(btn => {
     const active = btn.dataset.type === currentType
     const label = btn.dataset.type ? typeLabels[btn.dataset.type] || btn.dataset.type : 'All'
-    btn.textContent = label + (active ? ' •' : '')
+    btn.innerHTML = label + (active ? ' <span class="active-dot"></span>' : '')
     btn.classList.toggle('text-gray-800', active)
     btn.classList.toggle('font-semibold', active)
   })

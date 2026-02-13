@@ -275,7 +275,7 @@ async function loadItems() {
             }
             <div class="justify-between flex flex-col grow">
               <div>
-                <h3 class="item-title leading-4 wrap-break-word text-pretty text-ellipsis line-clamp-2 font-medium pb-1 mb-1 sm:text-base text-sm outline-none" data-item-id="${item.id}" data-original="${escapeHtml(item.title)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${isOwner ? escapeHtml(item.title) : `<a href="${item.url}" target="_blank" rel="noopener" class="hover:underline">${escapeHtml(item.title)}</a>`}</h3>
+                <h3 class="item-title leading-5 wrap-break-word text-pretty text-ellipsis line-clamp-2 font-medium mb-1 sm:text-base text-sm outline-none" data-item-id="${item.id}" data-original="${escapeHtml(item.title)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${isOwner ? escapeHtml(item.title) : `<a href="${item.url}" target="_blank" rel="noopener" class="hover:underline">${escapeHtml(item.title)}</a>`}</h3>
                 ${item.price
                   ? `<p class="item-desc leading-4 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2 outline-none" data-item-id="${item.id}" data-field="price" data-original="${escapeHtml(item.price)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.price)}</p>`
                   : item.creator

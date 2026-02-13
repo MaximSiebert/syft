@@ -9,7 +9,7 @@ const userIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox
 </svg>`
 
 function setAvatar(el, avatarUrl) {
-  el.innerHTML = `<a href="/profile.html" class="ml-1 block w-10 h-10 flex items-center justify-center hover:bg-white block rounded-full hover:border-gray-300 border-gray-200 border"><img src="${avatarUrl}" alt="" class="w-8 h-8 rounded-full"></a>`
+  el.innerHTML = `<a href="/profile.html" class="ml-1 block w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-white block rounded-full hover:border-gray-300 border-gray-200 border"><img src="${avatarUrl}" alt="" class="w-8 h-8 rounded-full"></a>`
 }
 
 export function renderNavUser(el, user) {

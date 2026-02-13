@@ -1,18 +1,18 @@
 export function showToast(message, type = 'info') {
   const toast = document.createElement('div')
   toast.className = 'fixed bottom-0 right-0 left-0 w-full h-[70px] px-4 py-6 bg-white/40 backdrop-blur-lg w-full font-medium text-sm text-center z-50 transition-all duration-300'
-  toast.style.transform = 'trangrayY(100%)'
+  toast.style.transform = 'translateY(100%)'
   toast.style.opacity = '0'
   toast.textContent = message
   document.body.appendChild(toast)
 
   requestAnimationFrame(() => {
-    toast.style.transform = 'trangrayY(0)'
+    toast.style.transform = 'translateY(0)'
     toast.style.opacity = '1'
   })
 
   setTimeout(() => {
-    toast.style.transform = 'trangrayY(100%)'
+    toast.style.transform = 'translateY(100%)'
     toast.style.opacity = '0'
     setTimeout(() => toast.remove(), 300)
   }, 3000)
