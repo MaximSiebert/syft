@@ -64,6 +64,9 @@ const urlTypes: UrlType[] = [
   { type: 'product', source: 'shopify', pattern: /^https?:\/\/[^/]+\.myshopify\.com\/products\/.+/ },
   { type: 'product', source: 'shopify', pattern: /^https?:\/\/[^/]+\/.+\/products\/[^/]+$/ },
   { type: 'product', source: 'shopify', pattern: /^https?:\/\/[^/]+\/products\/[^/]+$/ },
+  // YouTube
+  { type: 'link', source: 'youtube', pattern: /^https?:\/\/(www\.|m\.)?youtube\.com\/watch\?.*v=.+/ },
+  { type: 'link', source: 'youtube', pattern: /^https?:\/\/youtu\.be\/.+/ },
   // Google Maps locations
   { type: 'location', source: 'googlemaps', pattern: /^https?:\/\/maps\.app\.goo\.gl\/.+/ },
   { type: 'location', source: 'googlemaps', pattern: /^https?:\/\/goo\.gl\/maps\/.+/ },
@@ -96,6 +99,19 @@ function normalizeUrl(url: string, source: string): string {
       }
     } catch {
       return url.split('?')[0].replace(/\/$/, '')
+    }
+  }
+  if (source === 'youtube') {
+    try {
+      const parsed = new URL(url)
+      if (parsed.hostname === 'youtu.be') {
+        const videoId = parsed.pathname.slice(1)
+        return `https://www.youtube.com/watch?v=${videoId}`
+      }
+      const videoId = parsed.searchParams.get('v')
+      return videoId ? `https://www.youtube.com/watch?v=${videoId}` : url
+    } catch {
+      return url
     }
   }
   if (source === 'youtubemusic') {
@@ -517,6 +533,40 @@ async function scrapeYouTubeMusicAlbum(url: string): Promise<Partial<ItemData>> 
 
   return {
     title: title || 'Unknown Album',
+    creator,
+    cover_image_url,
+  }
+}
+
+// ============================================
+// YOUTUBE (oEmbed API)
+// ============================================
+
+async function scrapeYouTube(url: string): Promise<Partial<ItemData>> {
+  let title: string | null = null
+  let creator: string | null = null
+  let cover_image_url: string | null = null
+
+  try {
+    const oembedRes = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`)
+    if (oembedRes.ok) {
+      const data = await oembedRes.json()
+      title = data.title || null
+      creator = data.author_name || null
+      cover_image_url = data.thumbnail_url || null
+    }
+  } catch { /* continue */ }
+
+  // Fallback: get higher-res thumbnail via video ID
+  if (!cover_image_url) {
+    const videoId = new URL(url).searchParams.get('v')
+    if (videoId) {
+      cover_image_url = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+    }
+  }
+
+  return {
+    title: title || 'Unknown Video',
     creator,
     cover_image_url,
   }
@@ -969,6 +1019,8 @@ serve(async (req) => {
       scraped = await scrapeSpotifyApi(url)
     } else if (urlType.source === 'spotify' && urlType.type === 'artist') {
       scraped = await scrapeSpotifyArtistApi(url)
+    } else if (urlType.source === 'youtube') {
+      scraped = await scrapeYouTube(normalizedUrl)
     } else if (urlType.source === 'youtubemusic' && urlType.type === 'album') {
       scraped = await scrapeYouTubeMusicAlbum(url)
     } else if (urlType.source === 'imdb') {
