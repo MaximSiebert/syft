@@ -18,7 +18,6 @@ export default defineConfig({
         login: resolve(__dirname, 'login.html'),
         profile: resolve(__dirname, 'profile.html'),
         list: resolve(__dirname, 'list.html'),
-        explore: resolve(__dirname, 'explore.html'),
         settings: resolve(__dirname, 'settings.html'),
       },
     },

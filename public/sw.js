@@ -1,5 +1,5 @@
 const CACHE = 'syft-v1'
-const PRECACHE = ['/explore.html']
+const PRECACHE = ['/']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -17,7 +17,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request).catch(() =>
       event.request.mode === 'navigate'
-        ? caches.match('/explore.html')
+        ? caches.match('/')
         : Response.error()
     )
   )

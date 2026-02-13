@@ -4,7 +4,7 @@ export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/explore.html`,
+      redirectTo: window.location.origin,
     },
   })
   if (error) throw error
@@ -16,7 +16,7 @@ export async function signUpWithEmail(email, password) {
     email,
     password,
     options: {
-      emailRedirectTo: `${window.location.origin}/explore.html`,
+      emailRedirectTo: window.location.origin,
     },
   })
   if (error) throw error
@@ -35,7 +35,7 @@ export async function signInWithEmail(email, password) {
 export async function signOut() {
   const { error } = await supabase.auth.signOut()
   if (error) throw error
-  window.location.href = '/explore.html'
+  window.location.href = '/'
 }
 
 export async function getCurrentUser() {
@@ -58,5 +58,5 @@ export async function deleteAccount() {
   const { error } = await supabase.rpc('delete_user_account')
   if (error) throw error
   await supabase.auth.signOut()
-  window.location.href = '/explore.html'
+  window.location.href = '/'
 }

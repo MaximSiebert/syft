@@ -24,7 +24,7 @@ async function init() {
   currentListId = params.get('id')
 
   if (!slug && !currentListId) {
-    window.location.href = '/explore.html'
+    window.location.href = '/'
     return
   }
 
@@ -36,7 +36,7 @@ async function init() {
       const list = await getListBySlug(slug)
       currentListId = list.id
     } catch {
-      window.location.href = '/explore.html'
+      window.location.href = '/'
       return
     }
   }

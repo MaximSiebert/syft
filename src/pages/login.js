@@ -5,7 +5,7 @@ import { showToast, setLoading } from '../utils/ui.js'
 async function init() {
   const session = await getSession()
   if (session) {
-    window.location.href = '/explore.html'
+    window.location.href = '/'
     return
   }
 
@@ -32,7 +32,7 @@ async function init() {
         showToast('Check your email to confirm your account', 'success')
       } else {
         await signInWithEmail(email, password)
-        window.location.href = '/explore.html'
+        window.location.href = '/'
       }
     } catch (error) {
       showToast(error.message, 'error')

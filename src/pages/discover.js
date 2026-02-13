@@ -23,7 +23,7 @@ async function init() {
   const user = session ? await getCurrentUser() : null
 
   renderNavUser(document.getElementById('user-email'), user)
-  document.title = 'Explore — Syft'
+  document.title = 'Discover — Syft'
 
   setupControls()
   await loadAndRender()

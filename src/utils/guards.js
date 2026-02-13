@@ -9,7 +9,7 @@ export async function requireAuth() {
   return session
 }
 
-export async function redirectIfAuthed(redirectTo = '/explore.html') {
+export async function redirectIfAuthed(redirectTo = '/') {
   const session = await getSession()
   if (session) {
     window.location.href = redirectTo

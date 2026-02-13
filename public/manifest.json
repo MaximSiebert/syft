@@ -2,7 +2,7 @@
   "name": "Syft",
   "short_name": "Syft",
   "description": "Collect and share the things you love.",
-  "start_url": "/explore.html",
+  "start_url": "/",
   "display": "standalone",
   "scope": "/",
   "background_color": "#f9fafb",
@@ -22,7 +22,7 @@
     }
   ],
   "share_target": {
-    "action": "/explore.html",
+    "action": "/",
     "method": "GET",
     "params": {
       "url": "url",
