@@ -31,6 +31,6 @@ export function renderNavUser(el, user) {
       })
       .catch(() => {})
   } else {
-    el.innerHTML = `<a href="/login.html" class="text-sm text-gray-50 bg-orange-500 hover:bg-orange-600 transition-colors px-3 h-10 flex items-center text-center rounded-full">${userIconSvg}</a>`
+    el.innerHTML = `<a href="/login.html" class="text-sm text-gray-50 bg-orange-500 hover:bg-orange-600 transition-colors h-8 w-8 flex items-center justify-center rounded-full">${userIconSvg}</a>`
   }
 }
