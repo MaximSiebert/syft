@@ -85,32 +85,35 @@
         <h1 class="text-2xl font-semibold">Syft</h1>
         <p class="leading-7 text-gray-400 text-2xl font-medium">Lists about anything & everything</p>
       </div>
-      <div id="controls" class="xl:col-span-2 md:col-span-1 col-span-2 md:pt-0 pt-12 h-full items-end grid text-sm text-gray-500 border-gray-200 border px-3 pb-3 pt-3 rounded-md">
-        <!-- View controls (uncomment to re-enable items on explore)
-        <div id="view-controls" class="gap-3">
-          <button class="view-btn cursor-pointer block hover:text-gray-800 transition-colors" data-view="all">All</button>
-          <button class="view-btn cursor-pointer block hover:text-gray-800 transition-colors" data-view="lists">Lists</button>
-          <button class="view-btn cursor-pointer block hover:text-gray-800 transition-colors" data-view="items">Items</button>
+      <div class="grid xl:col-span-2 md:col-span-1 col-span-2 gap-3">
+        <div class="md:pt-0 h-full items-end grid text-sm text-gray-500 border-gray-200 border px-3 pb-3 pt-3 rounded-md">Sort by</div>
+        <div id="controls" class="md:pt-0 h-full items-end grid text-sm text-gray-500">
+          <!-- View controls (uncomment to re-enable items on explore)
+          <div id="view-controls" class="gap-3">
+            <button class="view-btn cursor-pointer block hover:text-gray-800 transition-colors" data-view="all">All</button>
+            <button class="view-btn cursor-pointer block hover:text-gray-800 transition-colors" data-view="lists">Lists</button>
+            <button class="view-btn cursor-pointer block hover:text-gray-800 transition-colors" data-view="items">Items</button>
+          </div>
+          -->
+          <div id="sort-controls" class="gap-3 grid grid-cols-3 h-full items-end">
+            <button class="sort-btn h-full flex items-end cursor-pointer block hover:text-gray-800 transition-colors border-gray-200 hover:border-gray-300 border px-3 pb-3 pt-3 rounded-md" data-sort="recent">Recent</button>
+            <button class="sort-btn h-full flex items-end cursor-pointer block hover:text-gray-800 transition-colors border-gray-200 hover:border-gray-300 border px-3 pb-3 pt-3 rounded-md" data-sort="created">Created</button>
+            <button class="sort-btn h-full flex items-end cursor-pointer block hover:text-gray-800 transition-colors border-gray-200 hover:border-gray-300 border px-3 pb-3 pt-3 rounded-md" data-sort="random">Random</button>
+          </div>
+          <!-- Type controls (uncomment to re-enable items on explore)
+          <div id="type-controls" class="gap-3 hidden">
+            <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="">All</button>
+            <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="book">Books</button>
+            <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="movie">Movies</button>
+            <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="show">Shows</button>
+          </div>
+          <div id="type-controls-2" class="gap-3 hidden">
+            <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="artist">Artists</button>
+            <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="album">Albums</button>
+            <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="product">Products</button>
+          </div>
+          -->
         </div>
-        -->
-        <div id="sort-controls" class="gap-3">
-          <button class="sort-btn cursor-pointer block hover:text-gray-800 transition-colors" data-sort="recent">Recent</button>
-          <button class="sort-btn cursor-pointer block hover:text-gray-800 transition-colors" data-sort="created">Created</button>
-          <button class="sort-btn cursor-pointer block hover:text-gray-800 transition-colors" data-sort="random">Random</button>
-        </div>
-        <!-- Type controls (uncomment to re-enable items on explore)
-        <div id="type-controls" class="gap-3 hidden">
-          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="">All</button>
-          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="book">Books</button>
-          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="movie">Movies</button>
-          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="show">Shows</button>
-        </div>
-        <div id="type-controls-2" class="gap-3 hidden">
-          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="artist">Artists</button>
-          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="album">Albums</button>
-          <button class="type-btn cursor-pointer block hover:text-gray-800 transition-colors" data-type="product">Products</button>
-        </div>
-        -->
       </div>
     </div>
 
