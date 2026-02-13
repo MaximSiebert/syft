@@ -1,10 +1,6 @@
 const CACHE = 'syft-v2'
-const PRECACHE = ['/']
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE))
-  )
   self.skipWaiting()
 })
 
@@ -17,12 +13,13 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('fetch', (event) => {
-  // Always go to network, fall back to cache for navigation
+  if (event.request.mode !== 'navigate') return
+
   event.respondWith(
-    fetch(event.request).catch(() =>
-      event.request.mode === 'navigate'
-        ? caches.match('/')
-        : Response.error()
-    )
+    fetch(event.request).then((response) => {
+      const copy = response.clone()
+      caches.open(CACHE).then((cache) => cache.put('/', copy))
+      return response
+    }).catch(() => caches.match('/'))
   )
 })
