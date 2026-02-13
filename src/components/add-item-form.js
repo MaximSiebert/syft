@@ -17,7 +17,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
             class="w-full text-ellipsis bg-white px-3 py-3 text-sm rounded-md transition-colors border-gray-200 hover:border-gray-300 h-12 focus:border-gray-300 border outline-none">
           <span id="char-counter" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"></span>
         </div>
-        <div class="md:col-span-2 sm:col-span-3 col-span-6 flex sm:gap-3 gap-1">
+        <div class="md:col-span-2 sm:col-span-3 col-span-6 flex sm:gap-3 gap-1 items-center">
           <div class="relative grow min-w-0">
             <button type="button" id="list-picker-btn" class="w-full bg-white px-3 py-3 text-sm text-left rounded-md transition-colors border-gray-200 hover:border-gray-300 h-12 border outline-none truncate cursor-pointer flex items-center justify-between gap-2">
               <span id="list-picker-label" class="truncate">Select list</span>
@@ -33,7 +33,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
               </button>
             </div>
           </div>
-          <button type="submit" class="text-sm text-gray-50 bg-orange-500 hover:bg-orange-600 transition-colors w-12 h-12 flex shrink-0 justify-center items-center rounded-full cursor-pointer">
+          <button type="submit" class="text-sm text-gray-50 bg-orange-500 hover:bg-orange-600 transition-colors w-10 h-10 flex shrink-0 justify-center items-center rounded-full cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" height="12" width="12">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M5.4 0.54v9.72" stroke-width="1.2"></path>
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 5.4h9.72" stroke-width="1.2"></path>
