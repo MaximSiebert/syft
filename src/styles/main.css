@@ -1,14 +1,5 @@
 @import "tailwindcss";
 
-body {
-  opacity: 0;
-  transition: opacity 150ms ease;
-}
-
-body.ready {
-  opacity: 1;
-}
-
 nav,
 #add-item-form {
   transition: transform 300ms ease;

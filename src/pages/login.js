@@ -51,8 +51,6 @@ async function init() {
       ? "Don't have an account? Sign up"
       : 'Already have an account? Sign in'
   })
-
-  document.body.classList.add('ready')
 }
 
 init()

@@ -1,5 +1,6 @@
 import { getList, getListBySlug, getListItems, removeItemFromList, deleteList, updateList, updateItem, reorderListItem } from '../lib/db.js'
 import { getCurrentUser, getSession } from '../lib/auth.js'
+import { clearCache } from '../lib/cache.js'
 import { showToast, inlineConfirm } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
 import { setupScrollHide } from '../utils/scroll.js'
@@ -15,33 +16,30 @@ let itemsOffset = 0
 let hasMoreItems = true
 let isLoading = false
 
+// Kick off data fetch at module level
+const _params = new URLSearchParams(window.location.search)
+const _slug = _params.get('list')
+const _idParam = _params.get('id')
+const _authPromise = getSession().then(s => s ? getCurrentUser() : null)
+const _listPromise = _slug ? getListBySlug(_slug) : _idParam ? getList(_idParam) : null
+
 async function init() {
-  const session = await getSession()
-  const user = session ? await getCurrentUser() : null
-
-  const params = new URLSearchParams(window.location.search)
-  const slug = params.get('list')
-  currentListId = params.get('id')
-
-  if (!slug && !currentListId) {
+  if (!_listPromise) {
     window.location.href = '/'
     return
   }
 
-  renderNavUser(document.getElementById('user-email'), user)
-
-  // If loaded by slug, resolve to list ID first
-  if (slug && !currentListId) {
-    try {
-      const list = await getListBySlug(slug)
-      currentListId = list.id
-    } catch {
-      window.location.href = '/'
-      return
-    }
+  let list, user
+  try {
+    ;[list, user] = await Promise.all([_listPromise, _authPromise])
+  } catch {
+    window.location.href = '/'
+    return
   }
 
-  await loadList(user)
+  currentListId = list.id
+  renderNavUser(document.getElementById('user-email'), user)
+  loadList(user, list)
   await loadItems()
   setupObserver()
   setupRemoveHandler()
@@ -108,8 +106,6 @@ async function init() {
     const deleteBtn = document.getElementById('delete-list-btn')
     if (deleteBtn) deleteBtn.style.display = 'none'
   }
-
-  document.body.classList.add('ready')
 }
 
 function setAllNames(name) {
@@ -118,9 +114,8 @@ function setAllNames(name) {
   })
 }
 
-async function loadList(user) {
+function loadList(user, list) {
   try {
-    const list = await getList(currentListId)
     currentListName = list.name
     isOwner = user ? list.user_id === user.id : false
     setAllNames(list.name)
@@ -212,6 +207,7 @@ async function loadList(user) {
 
 async function resetAndLoadItems() {
   isLoading = true
+  clearCache('discover')
   itemsOffset = 0
   hasMoreItems = true
   document.getElementById('items-container').innerHTML = ''

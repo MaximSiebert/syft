@@ -1,5 +1,6 @@
 import { getCurrentUser, getSession } from '../lib/auth.js'
 import { getLists, createList, getProfile } from '../lib/db.js'
+import { clearCache } from '../lib/cache.js'
 import { showToast } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
 import { setupScrollHide } from '../utils/scroll.js'
@@ -12,25 +13,28 @@ let offset = 0
 let hasMore = true
 let isLoading = false
 
-async function init() {
-  const session = await getSession()
-  const user = session ? await getCurrentUser() : null
+// Kick off auth and profile fetch in parallel when viewing someone else's profile
+const _params = new URLSearchParams(window.location.search)
+const _profileId = _params.get('id')
+const _authPromise = getSession().then(s => s ? getCurrentUser() : null)
+const _profilePromise = _profileId ? getProfile(_profileId) : null
 
-  const params = new URLSearchParams(window.location.search)
-  const profileId = params.get('id')
+async function init() {
+  const user = await _authPromise
 
   // Own profile requires auth
-  if (!profileId && !user) {
+  if (!_profileId && !user) {
     window.location.href = '/login.html'
     return
   }
 
   renderNavUser(document.getElementById('user-email'), user)
 
-  const isOwnProfile = user && (!profileId || profileId === user.id)
-  currentUserId = isOwnProfile ? undefined : profileId
+  const isOwnProfile = user && (!_profileId || _profileId === user.id)
+  currentUserId = isOwnProfile ? undefined : _profileId
 
-  const profile = await getProfile(profileId || undefined)
+  // Use pre-fetched profile or fetch own profile now
+  const profile = _profilePromise ? await _profilePromise : await getProfile(user.id)
   const displayName = profile.display_name || profile.email
   const titleEl = document.getElementById('page-title')
   if (titleEl) titleEl.textContent = `${displayName}'s lists`
@@ -60,12 +64,11 @@ async function init() {
     const settingsBtn = document.getElementById('settings-btn')
     if (settingsBtn) settingsBtn.style.display = 'none'
   }
-
-  document.body.classList.add('ready')
 }
 
 async function resetAndLoad() {
   isLoading = true
+  clearCache('discover')
   offset = 0
   hasMore = true
   document.getElementById('lists-container').innerHTML = ''

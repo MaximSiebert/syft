@@ -97,8 +97,6 @@ async function init() {
       showToast(error.message, 'error')
     }
   })
-
-  document.body.classList.add('ready')
 }
 
 init()

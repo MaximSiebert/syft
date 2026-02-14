@@ -1,5 +1,6 @@
 import { getCurrentUser, getSession } from '../lib/auth.js'
 import { getAllLists, getAllItems } from '../lib/db.js'
+import { getCached, setCache, clearCache } from '../lib/cache.js'
 import { showToast } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
 import { setupScrollHide } from '../utils/scroll.js'
@@ -18,15 +19,21 @@ let currentView = 'lists' // Change to 'all' to re-enable items on explore
 let currentSort = 'recent'
 let currentType = ''
 
+// Kick off initial data fetch immediately at module level
+const _initialDataPromise = getAllLists({ from: 0, to: PAGE_SIZE - 1 })
+const _authPromise = getSession().then(s => s ? getCurrentUser() : null)
+
 async function init() {
-  const session = await getSession()
-  const user = session ? await getCurrentUser() : null
+  document.title = 'Discover — Syft'
+  setupControls()
+
+  // Run data render and auth in parallel
+  const [user] = await Promise.all([
+    _authPromise,
+    renderInitialData()
+  ])
 
   renderNavUser(document.getElementById('user-email'), user)
-  document.title = 'Discover — Syft'
-
-  setupControls()
-  await loadAndRender()
   setupObserver()
   setupScrollHide()
 
@@ -51,8 +58,37 @@ async function init() {
       history.replaceState(null, '', window.location.pathname)
     }
   }
+}
 
-  document.body.classList.add('ready')
+async function renderInitialData() {
+  const container = document.getElementById('explore-container')
+  const sentinel = document.getElementById('load-more-sentinel')
+
+  // Try cache first for instant back-navigation
+  const cached = getCached('discover')
+  if (cached) {
+    allLists = cached
+    listsOffset = cached.length
+    if (cached.length < PAGE_SIZE) hasMoreLists = false
+    container.insertAdjacentHTML('beforeend', cached.map(renderListCard).join(''))
+    updateSentinel()
+    return
+  }
+
+  sentinel.classList.remove('hidden')
+
+  try {
+    const lists = await _initialDataPromise
+    allLists = lists
+    listsOffset = lists.length
+    if (lists.length < PAGE_SIZE) hasMoreLists = false
+    container.insertAdjacentHTML('beforeend', lists.map(renderListCard).join(''))
+    setCache('discover', lists)
+    updateSentinel()
+  } catch (error) {
+    showToast(error.message, 'error')
+    sentinel.classList.add('hidden')
+  }
 }
 
 function extractUrl(text) {
@@ -72,6 +108,7 @@ function resetState() {
 
 async function resetAndLoad() {
   isLoading = true
+  clearCache('discover')
   resetState()
   await loadAndRender()
   isLoading = false
