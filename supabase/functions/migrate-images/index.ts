@@ -15,6 +15,31 @@ const CONTENT_TYPE_TO_EXT: Record<string, string> = {
 }
 
 const BATCH_SIZE = 50
+const MAX_IMAGE_WIDTH = 600
+
+async function fetchImage(imageUrl: string): Promise<{ blob: Blob; contentType: string } | null> {
+  const isSvg = /\.svg(\?|$)/i.test(imageUrl)
+  if (!isSvg) {
+    try {
+      const proxyUrl = `https://images.weserv.nl/?url=${encodeURIComponent(imageUrl)}&w=${MAX_IMAGE_WIDTH}&we&output=jpg&q=85`
+      const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(15000) })
+      if (res.ok) return { blob: await res.blob(), contentType: 'image/jpeg' }
+    } catch { /* proxy failed, fall through to direct */ }
+  }
+
+  const res = await fetch(imageUrl, {
+    signal: AbortSignal.timeout(10000),
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+      'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Referer': new URL(imageUrl).origin + '/',
+    },
+  })
+  if (!res.ok) return null
+  const contentType = res.headers.get('content-type')?.split(';')[0]?.trim() || 'image/jpeg'
+  return { blob: await res.blob(), contentType }
+}
 
 async function uploadImageToStorage(
   supabase: ReturnType<typeof createClient>,
@@ -23,30 +48,18 @@ async function uploadImageToStorage(
   fileName: string
 ): Promise<string | null> {
   try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 10000)
-
-    const res = await fetch(imageUrl, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-    })
-    clearTimeout(timeoutId)
-
-    if (!res.ok) {
-      console.error(`Image download failed (${res.status}) for ${imageUrl}`)
+    const result = await fetchImage(imageUrl)
+    if (!result) {
+      console.error(`Image download failed for ${imageUrl}`)
       return null
     }
 
-    const contentType = res.headers.get('content-type')?.split(';')[0]?.trim() || ''
-    const ext = CONTENT_TYPE_TO_EXT[contentType] || 'jpg'
+    const ext = CONTENT_TYPE_TO_EXT[result.contentType] || 'jpg'
     const filePath = `${fileName}.${ext}`
 
-    const blob = await res.blob()
     const { error } = await supabase.storage
       .from(bucket)
-      .upload(filePath, blob, { contentType, upsert: true })
+      .upload(filePath, result.blob, { contentType: result.contentType, upsert: true })
 
     if (error) {
       console.error(`Storage upload failed for ${filePath}:`, error.message)

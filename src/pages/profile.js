@@ -87,16 +87,6 @@ async function init() {
     const profile = _profilePromise ? await _profilePromise : await getProfile(user.id)
     renderProfile(profile)
     await loadLists(_cacheKey, profile)
-  } else {
-    // Revalidate cache in background
-    ;(async () => {
-      try {
-        const profile = _profilePromise ? await _profilePromise : user ? await getProfile(user.id) : null
-        if (!profile) return
-        const lists = await getLists(currentUserId, { from: 0, to: PAGE_SIZE - 1 })
-        if (_cacheKey) setCache(_cacheKey, { profile, lists, listsOffset: lists.length, hasMore: lists.length >= PAGE_SIZE })
-      } catch {}
-    })()
   }
 
   setupObserver()
