@@ -72,6 +72,10 @@ async function renderInitialData() {
     if (cached.length < PAGE_SIZE) hasMoreLists = false
     container.insertAdjacentHTML('beforeend', cached.map(renderListCard).join(''))
     updateSentinel()
+    // Revalidate cache in background
+    _initialDataPromise.then(freshLists => {
+      if (freshLists) setCache('discover', freshLists)
+    }).catch(() => {})
     return
   }
 

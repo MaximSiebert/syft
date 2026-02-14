@@ -12,7 +12,6 @@ async function init() {
   const avatarUrl = user.user_metadata?.avatar_url
   if (avatarUrl) {
     avatarEl.innerHTML = `<a href="/profile.html" class="ml-1 block w-10 h-10 flex items-center justify-center hover:bg-white block rounded-full hover:border-gray-300 border-gray-200 border"><img src="${avatarUrl}" alt="" class="w-8 h-8 rounded-full"></a>`
-    try { localStorage.setItem('syft_nav_avatar', avatarUrl) } catch {}
   } else {
     avatarEl.innerHTML = `<a href="/profile.html" class="text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors px-3 h-10 flex items-center text-center rounded-md">${user.email}</a>`
   }
@@ -23,11 +22,11 @@ async function init() {
     document.getElementById('user-email').textContent = profile.email
     currentName = profile.display_name || ''
 
-    // Update nav avatar to use profile URL (Storage)
+    // Update nav avatar to use profile URL (Storage) and cache the best URL
     if (profile.avatar_url) {
       avatarEl.innerHTML = `<a href="/profile.html" class="ml-1 block w-10 h-10 flex items-center justify-center hover:bg-white block rounded-full hover:border-gray-300 border-gray-200 border"><img src="${profile.avatar_url}" alt="" class="w-8 h-8 rounded-full"></a>`
-      try { localStorage.setItem('syft_nav_avatar', profile.avatar_url) } catch {}
     }
+    try { localStorage.setItem('syft_nav_avatar', profile.avatar_url || avatarUrl) } catch {}
 
     // Lazily migrate external avatar to Supabase Storage
     if (profile.avatar_url && !profile.avatar_url.includes('/storage/v1/object/public/')) {

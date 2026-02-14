@@ -10,7 +10,6 @@ const userIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox
 
 function setAvatar(el, avatarUrl) {
   el.innerHTML = `<a href="/profile.html" class="ml-1 block w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-white block rounded-full hover:border-gray-300 border-gray-200 border"><img src="${avatarUrl}" alt="" class="w-8 h-8 rounded-full"></a>`
-  try { localStorage.setItem('syft_nav_avatar', avatarUrl) } catch {}
 }
 
 export function renderNavUser(el, user) {
@@ -21,14 +20,16 @@ export function renderNavUser(el, user) {
       el.innerHTML = `<a href="/profile.html" class="text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors w-10 h-10 flex items-center justify-center rounded-full">${userIconSvg}</a>`
     }
 
-    // Swap to Storage URL from profile if available
+    // Swap to Storage URL from profile if available, then cache the best URL
     supabase
       .from('profiles')
       .select('avatar_url')
       .eq('id', user.id)
       .single()
       .then(({ data }) => {
+        const bestUrl = data?.avatar_url || oauthAvatar
         if (data?.avatar_url) setAvatar(el, data.avatar_url)
+        if (bestUrl) try { localStorage.setItem('syft_nav_avatar', bestUrl) } catch {}
       })
       .catch(() => {})
   } else {

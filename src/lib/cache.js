@@ -1,5 +1,16 @@
 const PREFIX = 'syft_'
 const MAX_AGE = 5 * 60 * 1000 // 5 minutes
+const CACHE_VERSION = '2'
+
+// One-time migration: flush stale caches when version bumps
+try {
+  if (localStorage.getItem('syft_cver') !== CACHE_VERSION) {
+    Object.keys(localStorage)
+      .filter(k => k.startsWith(PREFIX) && k !== 'syft_nav_avatar' && k !== 'syft_cver')
+      .forEach(k => localStorage.removeItem(k))
+    localStorage.setItem('syft_cver', CACHE_VERSION)
+  }
+} catch {}
 
 export function getCached(key) {
   try {

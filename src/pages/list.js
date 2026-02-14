@@ -62,6 +62,23 @@ async function init() {
     // Await auth after rendering for nav and forms
     user = await _authPromise
     renderNavUser(document.getElementById('user-email'), user)
+
+    // Revalidate: refresh cache and patch stale cover images
+    _listPromise.then(async (freshList) => {
+      if (!freshList) return
+      _listData = freshList
+      const freshItems = await getListItems(freshList.id, { from: 0, to: PAGE_SIZE - 1 })
+      if (_cacheKey) setCache(_cacheKey, { list: freshList, items: freshItems, itemsOffset: freshItems.length, hasMoreItems: freshItems.length >= PAGE_SIZE })
+      const container = document.getElementById('items-container')
+      freshItems.forEach(li => {
+        const card = container.querySelector(`[data-item-id="${li.id}"]`)
+        if (!card) return
+        const img = card.querySelector('a[target="_blank"] img')
+        if (img && li.items?.cover_image_url && img.getAttribute('src') !== li.items.cover_image_url) {
+          img.src = li.items.cover_image_url
+        }
+      })
+    }).catch(e => console.warn('[revalidate] list error:', e))
   } else {
     try {
       ;[list, user] = await Promise.all([_listPromise, _authPromise])
