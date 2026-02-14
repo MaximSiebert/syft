@@ -81,11 +81,16 @@
           var k = Object.keys(localStorage).find(function(k) { return /^sb-.*-auth-token$/.test(k) });
           if (!k) { e.innerHTML = '<a href="/login.html" class="text-sm text-gray-50 bg-orange-500 hover:bg-orange-600 transition-colors h-8 w-8 flex items-center justify-center rounded-full">' + svg + '</a>'; return }
           try {
-            var s = JSON.parse(localStorage.getItem(k));
-            if (s && s.user && s.user.user_metadata && s.user.user_metadata.avatar_url)
-              e.innerHTML = '<span class="ml-1 block w-10 h-10 rounded-full bg-gray-200 animate-pulse border border-gray-200"></span>';
-            else
-              e.innerHTML = '<a href="/profile.html" class="text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors w-10 h-10 flex items-center justify-center rounded-full">' + svg + '</a>';
+            var a = localStorage.getItem('syft_nav_avatar');
+            if (a)
+              e.innerHTML = '<a href="/profile.html" class="ml-1 block w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-white rounded-full hover:border-gray-300 border-gray-200 border"><img src="' + a + '" alt="" class="w-8 h-8 rounded-full"></a>';
+            else {
+              var s = JSON.parse(localStorage.getItem(k));
+              if (s && s.user && s.user.user_metadata && s.user.user_metadata.avatar_url)
+                e.innerHTML = '<span class="ml-1 block w-10 h-10 rounded-full bg-gray-200 animate-pulse border border-gray-200"></span>';
+              else
+                e.innerHTML = '<a href="/profile.html" class="text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors w-10 h-10 flex items-center justify-center rounded-full">' + svg + '</a>';
+            }
           } catch(x) { e.innerHTML = '<a href="/login.html" class="text-sm text-gray-50 bg-orange-500 hover:bg-orange-600 transition-colors h-8 w-8 flex items-center justify-center rounded-full">' + svg + '</a>' }
         })();
         </script>

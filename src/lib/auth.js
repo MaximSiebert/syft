@@ -35,6 +35,7 @@ export async function signInWithEmail(email, password) {
 export async function signOut() {
   const { error } = await supabase.auth.signOut()
   if (error) throw error
+  try { localStorage.removeItem('syft_nav_avatar') } catch {}
   window.location.href = '/'
 }
 

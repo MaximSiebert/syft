@@ -10,6 +10,7 @@ const userIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox
 
 function setAvatar(el, avatarUrl) {
   el.innerHTML = `<a href="/profile.html" class="ml-1 block w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-white block rounded-full hover:border-gray-300 border-gray-200 border"><img src="${avatarUrl}" alt="" class="w-8 h-8 rounded-full"></a>`
+  try { localStorage.setItem('syft_nav_avatar', avatarUrl) } catch {}
 }
 
 export function renderNavUser(el, user) {
@@ -32,5 +33,6 @@ export function renderNavUser(el, user) {
       .catch(() => {})
   } else {
     el.innerHTML = `<a href="/login.html" class="text-sm text-gray-50 bg-orange-500 hover:bg-orange-600 transition-colors h-8 w-8 flex items-center justify-center rounded-full">${userIconSvg}</a>`
+    try { localStorage.removeItem('syft_nav_avatar') } catch {}
   }
 }
