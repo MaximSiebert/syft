@@ -290,7 +290,7 @@ function setupControls() {
 function updateControls() {
   document.querySelectorAll('.view-btn').forEach(btn => {
     const active = btn.dataset.view === currentView
-    btn.innerHTML = btn.dataset.view.charAt(0).toUpperCase() + btn.dataset.view.slice(1) + (active ? ' <span class="active-dot w-1.5 h-1.5 bg-green-500 border border-green-500 shadow-[0_0_6px_var(--color-green-500)] block rounded-full mb-[7px]"></span>' : '')
+    btn.innerHTML = btn.dataset.view.charAt(0).toUpperCase() + btn.dataset.view.slice(1) + (active ? ' <span class="active-dot w-1.5 h-1.5 bg-green-500 shadow-[0_0_6px_var(--color-green-500)] block rounded-full mb-[7px]"></span>' : '')
     btn.classList.toggle('text-gray-800', active)
     btn.classList.toggle('font-semibold', active)
   })
@@ -299,7 +299,7 @@ function updateControls() {
     const active = btn.dataset.sort === currentSort
     const labels = { recent: 'Updated', created: 'Created', random: 'Random' }
     const label = labels[btn.dataset.sort] || btn.dataset.sort
-    btn.innerHTML = `<span class="active-dot w-1.5 h-1.5 block rounded-full mb-[7px] ${active ? 'bg-green-500 border border-green-500 shadow-[0_0_6px_var(--color-green-500)]' : 'bg-gray-50 border border-gray-400'}"></span>` + label
+    btn.innerHTML = `<span class="active-dot w-1.5 h-1.5 block rounded-full mb-[7px] ${active ? 'bg-green-500 shadow-[0_0_6px_var(--color-green-500)]' : 'bg-gray-300'}"></span>` + label
     btn.classList.toggle('text-gray-800', active)
     btn.classList.toggle('font-semibold', active)
   })
