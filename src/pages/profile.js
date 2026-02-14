@@ -40,6 +40,7 @@ async function init() {
   if (titleEl) titleEl.textContent = `${displayName}'s lists`
   document.title = `${displayName}'s lists — Syft`
 
+  const avatarSkeleton = document.getElementById('profile-avatar-skeleton')
   if (profile.avatar_url) {
     const avatarEl = document.getElementById('profile-avatar')
     if (avatarEl) {
@@ -47,6 +48,7 @@ async function init() {
       avatarEl.classList.remove('hidden')
     }
   }
+  if (avatarSkeleton) avatarSkeleton.remove()
 
   await loadLists()
   setupObserver()

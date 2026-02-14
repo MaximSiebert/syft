@@ -71,11 +71,27 @@
               </svg>
             </a>
           <span class="text-gray-200">/</span>
-          <a id="creator-btn" href="#" class="hidden font-semibold text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors px-2 h-8 flex items-center text-center rounded-md">
+          <a id="creator-btn" href="#" class="font-semibold text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors px-2 h-8 flex items-center text-center rounded-md">
+            <span class="skeleton-bar inline-block h-3.5 w-32 bg-gray-200 rounded animate-pulse"></span>
           </a>
         </div>
         <div class="flex items-center gap-1">
           <span id="user-email"></span>
+          <script>
+          (function() {
+            var e = document.getElementById('user-email');
+            var svg = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" height="12" width="12"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M7.2 6.48a2.88 2.88 0 1 0 0-5.76 2.88 2.88 0 0 0 0 5.76Z" stroke-width="1.6"></path><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M13.31 13.68a6.48 6.48 0 0 0-12.22 0h12.22Z" stroke-width="1.6"></path></svg>';
+            var k = Object.keys(localStorage).find(function(k) { return /^sb-.*-auth-token$/.test(k) });
+            if (!k) { e.innerHTML = '<a href="/login.html" class="text-sm text-gray-50 bg-orange-500 hover:bg-orange-600 transition-colors h-8 w-8 flex items-center justify-center rounded-full">' + svg + '</a>'; return }
+            try {
+              var s = JSON.parse(localStorage.getItem(k));
+              if (s && s.user && s.user.user_metadata && s.user.user_metadata.avatar_url)
+                e.innerHTML = '<span class="ml-1 block w-10 h-10 rounded-full bg-gray-200 animate-pulse border border-gray-200"></span>';
+              else
+                e.innerHTML = '<a href="/profile.html" class="text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors w-10 h-10 flex items-center justify-center rounded-full">' + svg + '</a>';
+            } catch(x) { e.innerHTML = '<a href="/login.html" class="text-sm text-gray-50 bg-orange-500 hover:bg-orange-600 transition-colors h-8 w-8 flex items-center justify-center rounded-full">' + svg + '</a>' }
+          })();
+          </script>
         </div>
       </div>
   </nav>
@@ -83,8 +99,8 @@
   <main class="lg:px-8 px-4 lg:pb-8 pb-4 pt-16">
 
     <div class="mb-3 relative transition-colors border border-gray-200 rounded-md px-3 pb-3" id="list-header">
-      <h1 class="list-name text-2xl font-semibold outline-none pt-40 leading-[24px]"></h1>
-      <a id="list-author" href="#" class="hidden mt-1 flex items-center gap-1 text-sm text-gray-500 group mt-2"></a>
+      <h1 class="list-name text-2xl font-semibold outline-none pt-40 leading-[24px]"><span class="skeleton-bar inline-block h-6 w-64 bg-gray-200 rounded animate-pulse"></span></h1>
+      <a id="list-author" href="#" class="mt-1 flex items-center gap-1 text-sm text-gray-500 group mt-2"><span class="skeleton-bar inline-block w-5 h-5 rounded-full bg-gray-200 animate-pulse shrink-0"></span><span class="skeleton-bar inline-block h-4 w-24 bg-gray-200 rounded animate-pulse"></span></a>
       <button id="delete-list-btn" class="absolute top-3 right-3 text-sm bg-gray-50 hover:bg-white transition-colors w-8 h-8 flex items-center justify-center rounded-md hover:border-gray-300 border border-gray-200 cursor-pointer ">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" id="Remove-1--Streamline-Micro" height="12" width="12">
           <path stroke="#000000" stroke-linecap="round" stroke-linejoin="round" d="M0.54 5.4h9.72" stroke-width="1.2"></path>
@@ -93,7 +109,7 @@
     </div>
     <div id="items-container" class="flex flex-wrap gap-3">
     </div>
-    <div id="load-more-sentinel" class="hidden h-full transition-colors border-gray-200 border px-3 pb-3 pt-40 mt-3 rounded-md flex items-end bg-gray-100">
+    <div id="load-more-sentinel" class="h-full transition-colors border-gray-200 border px-3 pb-3 pt-40 mt-3 rounded-md flex items-end bg-gray-100">
       <div class="flex items-center gap-2">
         <svg class="animate-spin sm:w-8 w-6 sm:h-8 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
           <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
