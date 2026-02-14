@@ -1,4 +1,4 @@
-import { getCurrentUser, getSession } from '../lib/auth.js'
+import { getCurrentUser, getSession, getSessionUserIdSync } from '../lib/auth.js'
 import { getLists, createList, getProfile } from '../lib/db.js'
 import { getCached, setCache, clearCache } from '../lib/cache.js'
 import { showToast } from '../utils/ui.js'
@@ -38,23 +38,13 @@ function renderProfile(profile) {
 }
 
 async function init() {
-  const user = await _authPromise
-
-  // Own profile requires auth
-  if (!_profileId && !user) {
-    window.location.href = '/login.html'
-    return
-  }
-
-  renderNavUser(document.getElementById('user-email'), user)
-
-  const isOwnProfile = user && (!_profileId || _profileId === user.id)
-  currentUserId = isOwnProfile ? undefined : _profileId
-
-  _cacheKey = 'profile:' + (_profileId || (user && user.id) || 'own')
+  // Compute cache key synchronously so we can render from cache before awaiting auth
+  const syncUserId = getSessionUserIdSync()
+  _cacheKey = 'profile:' + (_profileId || syncUserId || 'own')
   const cached = getCached(_cacheKey)
 
   if (cached) {
+    // Render from cache immediately (no await)
     renderProfile(cached.profile)
     const container = document.getElementById('lists-container')
     const sentinel = document.getElementById('load-more-sentinel')
@@ -77,7 +67,23 @@ async function init() {
     }
     if (hasMore) sentinel.classList.remove('hidden')
     else sentinel.classList.add('hidden')
-  } else {
+  }
+
+  // Await auth after cache rendering
+  const user = await _authPromise
+
+  // Own profile requires auth
+  if (!_profileId && !user) {
+    window.location.href = '/login.html'
+    return
+  }
+
+  renderNavUser(document.getElementById('user-email'), user)
+
+  const isOwnProfile = user && (!_profileId || _profileId === user.id)
+  currentUserId = isOwnProfile ? undefined : _profileId
+
+  if (!cached) {
     const profile = _profilePromise ? await _profilePromise : await getProfile(user.id)
     renderProfile(profile)
     await loadLists(_cacheKey, profile)

@@ -11,13 +11,18 @@ export function getCached(key) {
       return null
     }
     return data
-  } catch { return null }
+  } catch (e) {
+    console.warn('[cache] getCached error:', key, e)
+    return null
+  }
 }
 
 export function setCache(key, data) {
   try {
     localStorage.setItem(PREFIX + key, JSON.stringify({ data, ts: Date.now() }))
-  } catch {}
+  } catch (e) {
+    console.warn('[cache] setCache error:', key, e)
+  }
 }
 
 export function clearCache(key) {

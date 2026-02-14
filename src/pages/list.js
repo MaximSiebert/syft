@@ -1,5 +1,5 @@
 import { getList, getListBySlug, getListItems, removeItemFromList, deleteList, updateList, updateItem, reorderListItem } from '../lib/db.js'
-import { getCurrentUser, getSession } from '../lib/auth.js'
+import { getCurrentUser, getSession, getSessionUserIdSync } from '../lib/auth.js'
 import { getCached, setCache, clearCache } from '../lib/cache.js'
 import { showToast, inlineConfirm } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
@@ -35,20 +35,22 @@ async function init() {
   let list, user
 
   if (cached) {
-    user = await _authPromise
     list = cached.list
     currentListId = list.id
     _listData = list
-    renderNavUser(document.getElementById('user-email'), user)
-    loadList(user, list)
 
-    // Render cached items
+    // Determine ownership synchronously so we can render from cache instantly
+    const syncUserId = getSessionUserIdSync()
+    isOwner = syncUserId ? list.user_id === syncUserId : false
+    loadList(syncUserId ? { id: syncUserId } : null, list)
+
+    // Render cached items immediately (no await)
     const container = document.getElementById('items-container')
     const sentinel = document.getElementById('load-more-sentinel')
     itemsOffset = cached.itemsOffset
     hasMoreItems = cached.hasMoreItems
     if (cached.items.length === 0) {
-      container.innerHTML = (user && list.user_id === user.id)
+      container.innerHTML = isOwner
         ? '<div class="w-full relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1"><p class="sm:text-xl text-lg pt-40 font-medium">Add your first item below</p></div>'
         : '<div class="w-full relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1"><p class="sm:text-xl text-lg pt-40 font-medium">No items yet</p></div>'
     } else {
@@ -56,6 +58,10 @@ async function init() {
     }
     if (hasMoreItems) sentinel.classList.remove('hidden')
     else sentinel.classList.add('hidden')
+
+    // Await auth after rendering for nav and forms
+    user = await _authPromise
+    renderNavUser(document.getElementById('user-email'), user)
   } else {
     try {
       ;[list, user] = await Promise.all([_listPromise, _authPromise])

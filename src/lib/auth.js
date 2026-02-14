@@ -48,6 +48,15 @@ export async function getSession() {
   return session
 }
 
+export function getSessionUserIdSync() {
+  const key = Object.keys(localStorage).find(k => /^sb-.*-auth-token$/.test(k))
+  if (!key) return null
+  try {
+    const s = JSON.parse(localStorage.getItem(key))
+    return s?.user?.id || null
+  } catch { return null }
+}
+
 export function onAuthStateChange(callback) {
   return supabase.auth.onAuthStateChange((event, session) => {
     callback(event, session)
