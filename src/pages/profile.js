@@ -1,6 +1,6 @@
 import { getCurrentUser, getSession } from '../lib/auth.js'
 import { getLists, createList, getProfile } from '../lib/db.js'
-import { clearCache } from '../lib/cache.js'
+import { getCached, setCache, clearCache } from '../lib/cache.js'
 import { showToast } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
 import { setupScrollHide } from '../utils/scroll.js'
@@ -12,12 +12,30 @@ let currentUserId = null
 let offset = 0
 let hasMore = true
 let isLoading = false
+let _cacheKey = null
 
 // Kick off auth and profile fetch in parallel when viewing someone else's profile
 const _params = new URLSearchParams(window.location.search)
 const _profileId = _params.get('id')
 const _authPromise = getSession().then(s => s ? getCurrentUser() : null)
 const _profilePromise = _profileId ? getProfile(_profileId) : null
+
+function renderProfile(profile) {
+  const displayName = profile.display_name || profile.email
+  const titleEl = document.getElementById('page-title')
+  if (titleEl) titleEl.textContent = `${displayName}'s lists`
+  document.title = `${displayName}'s lists — Syft`
+
+  const avatarSkeleton = document.getElementById('profile-avatar-skeleton')
+  if (profile.avatar_url) {
+    const avatarEl = document.getElementById('profile-avatar')
+    if (avatarEl) {
+      avatarEl.src = profile.avatar_url
+      avatarEl.classList.remove('hidden')
+    }
+  }
+  if (avatarSkeleton) avatarSkeleton.remove()
+}
 
 async function init() {
   const user = await _authPromise
@@ -33,24 +51,38 @@ async function init() {
   const isOwnProfile = user && (!_profileId || _profileId === user.id)
   currentUserId = isOwnProfile ? undefined : _profileId
 
-  // Use pre-fetched profile or fetch own profile now
-  const profile = _profilePromise ? await _profilePromise : await getProfile(user.id)
-  const displayName = profile.display_name || profile.email
-  const titleEl = document.getElementById('page-title')
-  if (titleEl) titleEl.textContent = `${displayName}'s lists`
-  document.title = `${displayName}'s lists — Syft`
+  _cacheKey = 'profile:' + (_profileId || (user && user.id) || 'own')
+  const cached = getCached(_cacheKey)
 
-  const avatarSkeleton = document.getElementById('profile-avatar-skeleton')
-  if (profile.avatar_url) {
-    const avatarEl = document.getElementById('profile-avatar')
-    if (avatarEl) {
-      avatarEl.src = profile.avatar_url
-      avatarEl.classList.remove('hidden')
+  if (cached) {
+    renderProfile(cached.profile)
+    const container = document.getElementById('lists-container')
+    const sentinel = document.getElementById('load-more-sentinel')
+    offset = cached.listsOffset
+    hasMore = cached.hasMore
+    if (cached.lists.length === 0) {
+      container.innerHTML = `
+        <div class="relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col sm:col-span-1 col-span-2 justify-between h-full gap-1">
+          <p class="leading-[24px] sm:text-xl text-lg pt-30 font-medium">Create your first list</p>
+          <button data-expand-full class="absolute top-3 right-3 create-list-btn text-sm hover:border-gray-300 focus:border-gray-300 border border-gray-200 cursor-pointer bg-gray-50 hover:bg-white focus:bg-white transition-colors h-8 w-8 flex items-center justify-center rounded-md">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" id="Add-1--Streamline-Micro" height="12" width="12">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M5.4 0.54v9.72" stroke-width="1.2"></path>
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 5.4h9.72" stroke-width="1.2"></path>
+            </svg>
+          </button>
+        </div>
+      `
+    } else {
+      container.insertAdjacentHTML('beforeend', cached.lists.map(renderListCard).join(''))
     }
+    if (hasMore) sentinel.classList.remove('hidden')
+    else sentinel.classList.add('hidden')
+  } else {
+    const profile = _profilePromise ? await _profilePromise : await getProfile(user.id)
+    renderProfile(profile)
+    await loadLists(_cacheKey, profile)
   }
-  if (avatarSkeleton) avatarSkeleton.remove()
 
-  await loadLists()
   setupObserver()
   setupScrollHide()
 
@@ -71,6 +103,7 @@ async function init() {
 async function resetAndLoad() {
   isLoading = true
   clearCache('discover')
+  if (_cacheKey) clearCache(_cacheKey)
   offset = 0
   hasMore = true
   document.getElementById('lists-container').innerHTML = ''
@@ -78,9 +111,10 @@ async function resetAndLoad() {
   isLoading = false
 }
 
-async function loadLists() {
+async function loadLists(cacheKey, profile) {
   const container = document.getElementById('lists-container')
   const sentinel = document.getElementById('load-more-sentinel')
+  const isFirstPage = offset === 0
 
   try {
     sentinel.classList.remove('hidden')
@@ -88,7 +122,7 @@ async function loadLists() {
     offset += lists.length
     if (lists.length < PAGE_SIZE) hasMore = false
 
-    if (offset === lists.length && lists.length === 0) {
+    if (isFirstPage && lists.length === 0) {
       container.innerHTML = `
         <div class="relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col sm:col-span-1 col-span-2 justify-between h-full gap-1">
           <p class="leading-[24px] sm:text-xl text-lg pt-30 font-medium">Create your first list</p>
@@ -102,10 +136,15 @@ async function loadLists() {
       `
       setupCreateButtons()
       sentinel.classList.add('hidden')
+      if (cacheKey && profile) setCache(cacheKey, { profile, lists: [], listsOffset: 0, hasMore: false })
       return
     }
 
     container.insertAdjacentHTML('beforeend', lists.map(renderListCard).join(''))
+
+    if (isFirstPage && cacheKey && profile) {
+      setCache(cacheKey, { profile, lists, listsOffset: offset, hasMore })
+    }
 
     if (hasMore) {
       sentinel.classList.remove('hidden')

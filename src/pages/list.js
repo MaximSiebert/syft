@@ -1,6 +1,6 @@
 import { getList, getListBySlug, getListItems, removeItemFromList, deleteList, updateList, updateItem, reorderListItem } from '../lib/db.js'
 import { getCurrentUser, getSession } from '../lib/auth.js'
-import { clearCache } from '../lib/cache.js'
+import { getCached, setCache, clearCache } from '../lib/cache.js'
 import { showToast, inlineConfirm } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
 import { setupScrollHide } from '../utils/scroll.js'
@@ -15,11 +15,13 @@ let isOwner = false
 let itemsOffset = 0
 let hasMoreItems = true
 let isLoading = false
+let _listData = null
 
 // Kick off data fetch at module level
 const _params = new URLSearchParams(window.location.search)
 const _slug = _params.get('list')
 const _idParam = _params.get('id')
+const _cacheKey = _slug ? 'list:' + _slug : _idParam ? 'list:' + _idParam : null
 const _authPromise = getSession().then(s => s ? getCurrentUser() : null)
 const _listPromise = _slug ? getListBySlug(_slug) : _idParam ? getList(_idParam) : null
 
@@ -29,18 +31,45 @@ async function init() {
     return
   }
 
+  const cached = _cacheKey ? getCached(_cacheKey) : null
   let list, user
-  try {
-    ;[list, user] = await Promise.all([_listPromise, _authPromise])
-  } catch {
-    window.location.href = '/'
-    return
+
+  if (cached) {
+    user = await _authPromise
+    list = cached.list
+    currentListId = list.id
+    _listData = list
+    renderNavUser(document.getElementById('user-email'), user)
+    loadList(user, list)
+
+    // Render cached items
+    const container = document.getElementById('items-container')
+    const sentinel = document.getElementById('load-more-sentinel')
+    itemsOffset = cached.itemsOffset
+    hasMoreItems = cached.hasMoreItems
+    if (cached.items.length === 0) {
+      container.innerHTML = (user && list.user_id === user.id)
+        ? '<div class="w-full relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1"><p class="sm:text-xl text-lg pt-40 font-medium">Add your first item below</p></div>'
+        : '<div class="w-full relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1"><p class="sm:text-xl text-lg pt-40 font-medium">No items yet</p></div>'
+    } else {
+      container.insertAdjacentHTML('beforeend', renderItemCards(cached.items))
+    }
+    if (hasMoreItems) sentinel.classList.remove('hidden')
+    else sentinel.classList.add('hidden')
+  } else {
+    try {
+      ;[list, user] = await Promise.all([_listPromise, _authPromise])
+    } catch {
+      window.location.href = '/'
+      return
+    }
+    currentListId = list.id
+    _listData = list
+    renderNavUser(document.getElementById('user-email'), user)
+    loadList(user, list)
+    await loadItems()
   }
 
-  currentListId = list.id
-  renderNavUser(document.getElementById('user-email'), user)
-  loadList(user, list)
-  await loadItems()
   setupObserver()
   setupRemoveHandler()
   setupInlineEditing()
@@ -214,11 +243,74 @@ function loadList(user, list) {
 async function resetAndLoadItems() {
   isLoading = true
   clearCache('discover')
+  if (_cacheKey) clearCache(_cacheKey)
   itemsOffset = 0
   hasMoreItems = true
   document.getElementById('items-container').innerHTML = ''
   await loadItems()
   isLoading = false
+}
+
+function renderItemCards(listItems) {
+  return listItems.map(listItem => {
+    const item = listItem.items
+
+    if (item.type === 'text') {
+      return `
+        <div class="min-w-0" data-item-id="${listItem.id}">
+          <div class="group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-end h-full gap-1">
+            <h3 class="item-title leading-[24px] wrap-break-word text-pretty sm:text-xl text-lg pt-24 font-medium outline-none" data-item-id="${item.id}" data-original="${escapeHtml(item.title)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.title)}</h3>
+            ${isOwner ? `
+            <div class="h-6 items-center mt-2 pt-2 text-xs border-t border-gray-200 transition-opacity">
+              <button class="remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" id="Delete-Bin-3--Streamline-Micro" height="16" width="16">
+                  <desc>
+                    Delete Bin 3 Streamline Icon: https://streamlinehq.com
+                  </desc>
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M1.08 3.6057600000000005h12.240000000000002" stroke-width="1.6"></path>
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M10.440000000000001 13.680000000000001h-6.48a1.4400000000000002 1.4400000000000002 0 0 1 -1.4400000000000002 -1.4400000000000002v-8.64h9.360000000000001v8.64a1.4400000000000002 1.4400000000000002 0 0 1 -1.4400000000000002 1.4400000000000002Z" stroke-width="1.6"></path>
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M4.6195200000000005 3.6000000000000005v-0.32976000000000005a2.55024 2.55024 0 1 1 5.10048 0V3.6000000000000005" stroke-width="1.6"></path>
+                </svg>
+              </button>
+            </div>` : ''}
+          </div>
+        </div>
+      `
+    }
+
+    return `
+      <div class="min-w-0" data-item-id="${listItem.id}">
+        <div class="group hover:border-gray-300 border bg-white border-gray-200 transition-colors rounded-md p-3 h-full flex flex-col">
+          ${item.cover_image_url
+            ? `<div><a class="mb-3 grow-0 aspect-square flex justify-center items-center sm:p-3 p-1.5 border border-gray-100 group-hover:border-gray-200 transition-colors rounded-[3px]" href="${item.url}" target="_blank" rel="noopener">
+                  <img src="${item.cover_image_url}" alt="${escapeHtml(item.title)}" class="h-full object-contain ${item.type === 'artist' ? 'rounded-full' : 'rounded-[3px]'}">
+                </a></div>`
+            : ''
+          }
+          <div class="justify-between flex flex-col grow">
+            <div>
+              <h3 class="item-title leading-5 wrap-break-word text-pretty text-ellipsis line-clamp-2 font-medium mb-1 sm:text-base text-sm outline-none" data-item-id="${item.id}" data-original="${escapeHtml(item.title)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${isOwner ? escapeHtml(item.title) : `<a href="${item.url}" target="_blank" rel="noopener" class="hover:underline">${escapeHtml(item.title)}</a>`}</h3>
+              ${item.price
+                ? `<p class="item-desc leading-4 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2 outline-none" data-item-id="${item.id}" data-field="price" data-original="${escapeHtml(item.price)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.price)}</p>`
+                : item.creator
+                  ? `<p class="item-desc leading-4 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2 outline-none" data-item-id="${item.id}" data-field="creator" data-original="${escapeHtml(item.creator)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.creator)}</p>`
+                  : ''}
+            </div>
+            ${isOwner ? `<div class="h-6 items-center sm:mt-3 mt-6 pt-2 text-xs border-t border-gray-200 transition-opacity "><button class="remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" id="Delete-Bin-3--Streamline-Micro" height="16" width="16">
+                <desc>
+                  Delete Bin 3 Streamline Icon: https://streamlinehq.com
+                </desc>
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M1.08 3.6057600000000005h12.240000000000002" stroke-width="1.6"></path>
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M10.440000000000001 13.680000000000001h-6.48a1.4400000000000002 1.4400000000000002 0 0 1 -1.4400000000000002 -1.4400000000000002v-8.64h9.360000000000001v8.64a1.4400000000000002 1.4400000000000002 0 0 1 -1.4400000000000002 1.4400000000000002Z" stroke-width="1.6"></path>
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M4.6195200000000005 3.6000000000000005v-0.32976000000000005a2.55024 2.55024 0 1 1 5.10048 0V3.6000000000000005" stroke-width="1.6"></path>
+              </svg>
+            </button></div>` : ''}
+          </div>
+        </div>
+      </div>
+    `
+  }).join('')
 }
 
 async function loadItems() {
@@ -237,70 +329,15 @@ async function loadItems() {
         ? '<div class="w-full relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1"><p class="sm:text-xl text-lg pt-40 font-medium">Add your first item below</p></div>'
         : '<div class="w-full relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1"><p class="sm:text-xl text-lg pt-40 font-medium">No items yet</p></div>'
       sentinel.classList.add('hidden')
+      if (_cacheKey) setCache(_cacheKey, { list: { id: currentListId, name: currentListName, slug: _slug, user_id: null, profiles: null }, items: [], itemsOffset: 0, hasMoreItems: false })
       return
     }
 
-    const html = listItems.map(listItem => {
-      const item = listItem.items
+    container.insertAdjacentHTML('beforeend', renderItemCards(listItems))
 
-      if (item.type === 'text') {
-        return `
-          <div class="min-w-0" data-item-id="${listItem.id}">
-            <div class="group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-end h-full gap-1">
-              <h3 class="item-title leading-[24px] wrap-break-word text-pretty sm:text-xl text-lg pt-24 font-medium outline-none" data-item-id="${item.id}" data-original="${escapeHtml(item.title)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.title)}</h3>
-              ${isOwner ? `
-              <div class="h-6 items-center mt-2 pt-2 text-xs border-t border-gray-200 transition-opacity">
-                <button class="remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" id="Delete-Bin-3--Streamline-Micro" height="16" width="16">
-                    <desc>
-                      Delete Bin 3 Streamline Icon: https://streamlinehq.com
-                    </desc>
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M1.08 3.6057600000000005h12.240000000000002" stroke-width="1.6"></path>
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M10.440000000000001 13.680000000000001h-6.48a1.4400000000000002 1.4400000000000002 0 0 1 -1.4400000000000002 -1.4400000000000002v-8.64h9.360000000000001v8.64a1.4400000000000002 1.4400000000000002 0 0 1 -1.4400000000000002 1.4400000000000002Z" stroke-width="1.6"></path>
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M4.6195200000000005 3.6000000000000005v-0.32976000000000005a2.55024 2.55024 0 1 1 5.10048 0V3.6000000000000005" stroke-width="1.6"></path>
-                  </svg>
-                </button>
-              </div>` : ''}
-            </div>
-          </div>
-        `
-      }
-
-      return `
-        <div class="min-w-0" data-item-id="${listItem.id}">
-          <div class="group hover:border-gray-300 border bg-white border-gray-200 transition-colors rounded-md p-3 h-full flex flex-col">
-            ${item.cover_image_url
-              ? `<div><a class="mb-3 grow-0 aspect-square flex justify-center items-center sm:p-3 p-1.5 border border-gray-100 group-hover:border-gray-200 transition-colors rounded-[3px]" href="${item.url}" target="_blank" rel="noopener">
-                    <img src="${item.cover_image_url}" alt="${escapeHtml(item.title)}" class="h-full object-contain ${item.type === 'artist' ? 'rounded-full' : 'rounded-[3px]'}">
-                  </a></div>`
-              : ''
-            }
-            <div class="justify-between flex flex-col grow">
-              <div>
-                <h3 class="item-title leading-5 wrap-break-word text-pretty text-ellipsis line-clamp-2 font-medium mb-1 sm:text-base text-sm outline-none" data-item-id="${item.id}" data-original="${escapeHtml(item.title)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${isOwner ? escapeHtml(item.title) : `<a href="${item.url}" target="_blank" rel="noopener" class="hover:underline">${escapeHtml(item.title)}</a>`}</h3>
-                ${item.price
-                  ? `<p class="item-desc leading-4 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2 outline-none" data-item-id="${item.id}" data-field="price" data-original="${escapeHtml(item.price)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.price)}</p>`
-                  : item.creator
-                    ? `<p class="item-desc leading-4 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2 outline-none" data-item-id="${item.id}" data-field="creator" data-original="${escapeHtml(item.creator)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.creator)}</p>`
-                    : ''}
-              </div>
-              ${isOwner ? `<div class="h-6 items-center sm:mt-3 mt-6 pt-2 text-xs border-t border-gray-200 transition-opacity "><button class="remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" id="Delete-Bin-3--Streamline-Micro" height="16" width="16">
-                  <desc>
-                    Delete Bin 3 Streamline Icon: https://streamlinehq.com
-                  </desc>
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M1.08 3.6057600000000005h12.240000000000002" stroke-width="1.6"></path>
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M10.440000000000001 13.680000000000001h-6.48a1.4400000000000002 1.4400000000000002 0 0 1 -1.4400000000000002 -1.4400000000000002v-8.64h9.360000000000001v8.64a1.4400000000000002 1.4400000000000002 0 0 1 -1.4400000000000002 1.4400000000000002Z" stroke-width="1.6"></path>
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M4.6195200000000005 3.6000000000000005v-0.32976000000000005a2.55024 2.55024 0 1 1 5.10048 0V3.6000000000000005" stroke-width="1.6"></path>
-                </svg>
-              </button></div>` : ''}
-            </div>
-          </div>
-        </div>
-      `
-    }).join('')
-
-    container.insertAdjacentHTML('beforeend', html)
+    if (isFirstPage && _cacheKey && _listData) {
+      setCache(_cacheKey, { list: _listData, items: listItems, itemsOffset, hasMoreItems })
+    }
 
     if (hasMoreItems) {
       sentinel.classList.remove('hidden')

@@ -1,21 +1,25 @@
 const PREFIX = 'syft_'
+const MAX_AGE = 5 * 60 * 1000 // 5 minutes
 
 export function getCached(key) {
   try {
-    const raw = sessionStorage.getItem(PREFIX + key)
+    const raw = localStorage.getItem(PREFIX + key)
     if (!raw) return null
-    return JSON.parse(raw)
-  } catch {
-    return null
-  }
+    const { data, ts } = JSON.parse(raw)
+    if (Date.now() - ts > MAX_AGE) {
+      localStorage.removeItem(PREFIX + key)
+      return null
+    }
+    return data
+  } catch { return null }
 }
 
 export function setCache(key, data) {
   try {
-    sessionStorage.setItem(PREFIX + key, JSON.stringify(data))
-  } catch { /* quota exceeded */ }
+    localStorage.setItem(PREFIX + key, JSON.stringify({ data, ts: Date.now() }))
+  } catch {}
 }
 
 export function clearCache(key) {
-  sessionStorage.removeItem(PREFIX + key)
+  if (key) localStorage.removeItem(PREFIX + key)
 }
