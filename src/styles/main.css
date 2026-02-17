@@ -22,7 +22,9 @@ body.scroll-hidden #add-item-form {
   animation: spin 1s linear infinite;
 }
 
-#lists-container:not(:empty) {
+#lists-container:not(:empty),
+#explore-container:not(:empty),
+#items-container:not(:empty) {
   margin-top: 0.75rem;
 }
 
