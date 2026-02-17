@@ -1,4 +1,4 @@
-import { getCurrentUser, getSession } from '../lib/auth.js'
+import { getSession } from '../lib/auth.js'
 import { getAllLists, getAllItems } from '../lib/db.js'
 import { getCached, setCache, clearCache } from '../lib/cache.js'
 import { showToast } from '../utils/ui.js'
@@ -21,7 +21,7 @@ let currentType = ''
 
 // Kick off initial data fetch immediately at module level
 const _initialDataPromise = getAllLists({ from: 0, to: PAGE_SIZE - 1 })
-const _authPromise = getSession().then(s => s ? getCurrentUser() : null)
+const _authPromise = getSession().then(s => s?.user || null)
 
 async function init() {
   document.title = 'Discover — Syft'

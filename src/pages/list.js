@@ -1,5 +1,5 @@
 import { getList, getListBySlug, getListItems, removeItemFromList, deleteList, updateList, updateItem, reorderListItem } from '../lib/db.js'
-import { getCurrentUser, getSession, getSessionUserIdSync } from '../lib/auth.js'
+import { getSession, getSessionUserIdSync } from '../lib/auth.js'
 import { getCached, setCache, clearCache } from '../lib/cache.js'
 import { showToast, inlineConfirm } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
@@ -22,7 +22,7 @@ const _params = new URLSearchParams(window.location.search)
 const _slug = _params.get('list')
 const _idParam = _params.get('id')
 const _cacheKey = _slug ? 'list:' + _slug : _idParam ? 'list:' + _idParam : null
-const _authPromise = getSession().then(s => s ? getCurrentUser() : null)
+const _authPromise = getSession().then(s => s?.user || null)
 const _listPromise = _slug ? getListBySlug(_slug) : _idParam ? getList(_idParam) : null
 
 async function init() {

@@ -14,13 +14,16 @@ function setAvatar(el, avatarUrl) {
 
 export function renderNavUser(el, user) {
   if (user) {
+    const cached = localStorage.getItem('syft_nav_avatar')
+    if (cached) return // inline script already rendered it
+
     const oauthAvatar = user.user_metadata?.avatar_url
     if (oauthAvatar) setAvatar(el, oauthAvatar)
     else {
       el.innerHTML = `<a href="/profile.html" class="text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors w-10 h-10 flex items-center justify-center rounded-full">${userIconSvg}</a>`
     }
 
-    // Swap to Storage URL from profile if available, then cache the best URL
+    // Fetch Storage URL from profile, cache the best URL
     supabase
       .from('profiles')
       .select('avatar_url')

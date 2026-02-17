@@ -1,4 +1,4 @@
-import { getCurrentUser, getSession, getSessionUserIdSync } from '../lib/auth.js'
+import { getSession, getSessionUserIdSync } from '../lib/auth.js'
 import { getLists, createList, getProfile } from '../lib/db.js'
 import { getCached, setCache, clearCache } from '../lib/cache.js'
 import { showToast } from '../utils/ui.js'
@@ -17,7 +17,7 @@ let _cacheKey = null
 // Kick off auth and profile fetch in parallel when viewing someone else's profile
 const _params = new URLSearchParams(window.location.search)
 const _profileId = _params.get('id')
-const _authPromise = getSession().then(s => s ? getCurrentUser() : null)
+const _authPromise = getSession().then(s => s?.user || null)
 const _profilePromise = _profileId ? getProfile(_profileId) : null
 
 function renderProfile(profile) {

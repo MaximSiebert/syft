@@ -8,9 +8,11 @@ function escapeHtml(text) {
 }
 
 export async function initAddItemForm({ defaultListId, onItemAdded, onListCreated } = {}) {
-  // Inject form HTML (start off-screen, will slide up)
+  const shouldAnimate = !Object.keys(localStorage).some(k => /^sb-.*-auth-token$/.test(k))
+
+  // Inject form HTML
   document.body.insertAdjacentHTML('beforeend', `
-    <form id="add-item-form" class="fixed bottom-0 left-0 w-full lg:px-8 px-4 py-3 z-20" style="transform:translateY(100%)">
+    <form id="add-item-form" class="fixed bottom-0 left-0 w-full lg:px-8 px-4 py-3 z-20"${shouldAnimate ? ' style="transform:translateY(100%)"' : ''}>
       <div class="grid grid-cols-6 sm:gap-3 gap-1">
         <div class="relative md:col-span-4 sm:col-span-3 col-span-6">
           <input type="text" id="add-item-input" placeholder="Paste a URL or write something short..." required
@@ -310,12 +312,14 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M1.35 5.4l2.7 2.7 5.4-5.4" stroke-width="1.2"></path>
   </svg>`
 
-  // Slide form into view
-  requestAnimationFrame(() => {
+  // Slide form into view on first login
+  if (shouldAnimate) {
     requestAnimationFrame(() => {
-      form.style.transform = ''
+      requestAnimationFrame(() => {
+        form.style.transform = ''
+      })
     })
-  })
+  }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault()
