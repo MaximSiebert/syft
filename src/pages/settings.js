@@ -72,6 +72,26 @@ async function init() {
     console.error('Failed to load profile:', error)
   }
 
+  // Appearance
+  const appearanceSelect = document.getElementById('appearance-select')
+  const savedTheme = localStorage.getItem('syft_theme') || 'system'
+  appearanceSelect.value = savedTheme
+
+  appearanceSelect.addEventListener('change', () => {
+    const value = appearanceSelect.value
+    if (value === 'system') {
+      localStorage.removeItem('syft_theme')
+    } else {
+      localStorage.setItem('syft_theme', value)
+    }
+    const isDark = value === 'dark' || (value === 'system' && matchMedia('(prefers-color-scheme:dark)').matches)
+    document.documentElement.classList.toggle('dark', isDark)
+    // Update theme-color meta tags
+    const metas = document.querySelectorAll('meta[name="theme-color"]')
+    const color = isDark ? '#111113' : '#f9fafb'
+    metas.forEach(m => m.setAttribute('content', color))
+  })
+
   document.getElementById('signout-btn')?.addEventListener('click', async () => {
     try {
       await signOut()

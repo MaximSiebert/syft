@@ -35,7 +35,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
               </button>
             </div>
           </div>
-          <button type="submit" class="text-sm text-gray-50 bg-orange-500 hover:bg-orange-600 transition-colors w-10 h-10 flex shrink-0 justify-center items-center rounded-full cursor-pointer">
+          <button type="submit" class="text-sm text-[#fafafa] bg-orange-500 hover:bg-orange-600 transition-colors w-10 h-10 flex shrink-0 justify-center items-center rounded-full cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" height="12" width="12">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M5.4 0.54v9.72" stroke-width="1.2"></path>
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 5.4h9.72" stroke-width="1.2"></path>

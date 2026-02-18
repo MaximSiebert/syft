@@ -9,7 +9,8 @@
   <meta property="og:description" content="Lists for anything and everything">
   <meta property="og:image" content="https://syft.maximsiebert.com/meta-cover.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#f9fafb">
+  <meta name="theme-color" content="#f9fafb" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111113" media="(prefers-color-scheme: dark)">
   <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="shortcut icon" href="/favicon.ico" />
@@ -17,6 +18,7 @@
   <meta name="apple-mobile-web-app-title" content="Syft" />
   <link rel="manifest" href="/manifest.json">
   <title>Syft — Discover & share lists about anything & everything</title>
+  <script>(function(){var t=localStorage.getItem('syft_theme'),m=matchMedia('(prefers-color-scheme:dark)'),d=t==='dark'||(t!=='light'&&m.matches);if(d)document.documentElement.classList.add('dark');if(t!=='light'&&t!=='dark')m.addEventListener('change',function(e){document.documentElement.classList.toggle('dark',e.matches)})})()</script>
   <link rel="stylesheet" href="/src/styles/main.css">
   <script type="module" src="/src/pages/discover.js"></script>
 </head>
@@ -79,7 +81,7 @@
           var e = document.getElementById('user-email');
           var svg = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" height="12" width="12"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M7.2 6.48a2.88 2.88 0 1 0 0-5.76 2.88 2.88 0 0 0 0 5.76Z" stroke-width="1.6"></path><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M13.31 13.68a6.48 6.48 0 0 0-12.22 0h12.22Z" stroke-width="1.6"></path></svg>';
           var k = Object.keys(localStorage).find(function(k) { return /^sb-.*-auth-token$/.test(k) });
-          if (!k) { e.innerHTML = '<a href="/login.html" class="text-sm text-gray-50 bg-orange-500 hover:bg-orange-600 transition-colors h-8 w-8 flex items-center justify-center rounded-full">' + svg + '</a>'; return }
+          if (!k) { e.innerHTML = '<a href="/login.html" class="text-sm text-[#fafafa] bg-orange-500 hover:bg-orange-600 transition-colors h-8 w-8 flex items-center justify-center rounded-full">' + svg + '</a>'; return }
           try {
             var a = localStorage.getItem('syft_nav_avatar');
             if (a)
@@ -91,7 +93,7 @@
               else
                 e.innerHTML = '<a href="/profile.html" class="text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors w-10 h-10 flex items-center justify-center rounded-full">' + svg + '</a>';
             }
-          } catch(x) { e.innerHTML = '<a href="/login.html" class="text-sm text-gray-50 bg-orange-500 hover:bg-orange-600 transition-colors h-8 w-8 flex items-center justify-center rounded-full">' + svg + '</a>' }
+          } catch(x) { e.innerHTML = '<a href="/login.html" class="text-sm text-[#fafafa] bg-orange-500 hover:bg-orange-600 transition-colors h-8 w-8 flex items-center justify-center rounded-full">' + svg + '</a>' }
         })();
         </script>
       </div>

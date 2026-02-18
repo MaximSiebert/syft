@@ -9,7 +9,8 @@
   <meta property="og:description" content="Lists for anything and everything">
   <meta property="og:image" content="https://syft.maximsiebert.com/meta-cover.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#f9fafb">
+  <meta name="theme-color" content="#f9fafb" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111113" media="(prefers-color-scheme: dark)">
   <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="shortcut icon" href="/favicon.ico" />
@@ -17,6 +18,7 @@
   <meta name="apple-mobile-web-app-title" content="Syft" />
   <link rel="manifest" href="/manifest.json">
   <title>Sign in — Syft</title>
+  <script>(function(){var t=localStorage.getItem('syft_theme'),m=matchMedia('(prefers-color-scheme:dark)'),d=t==='dark'||(t!=='light'&&m.matches);if(d)document.documentElement.classList.add('dark');if(t!=='light'&&t!=='dark')m.addEventListener('change',function(e){document.documentElement.classList.toggle('dark',e.matches)})})()</script>
   <link rel="stylesheet" href="/src/styles/main.css">
   <script type="module" src="/src/pages/login.js"></script>
 </head>

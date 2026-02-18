@@ -9,7 +9,8 @@
   <meta property="og:description" content="Lists for anything and everything">
   <meta property="og:image" content="https://syft.maximsiebert.com/meta-cover.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#f9fafb">
+  <meta name="theme-color" content="#f9fafb" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111113" media="(prefers-color-scheme: dark)">
   <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="shortcut icon" href="/favicon.ico" />
@@ -17,10 +18,11 @@
   <meta name="apple-mobile-web-app-title" content="Syft" />
   <link rel="manifest" href="/manifest.json">
   <title>Settings — Syft</title>
+  <script>(function(){var t=localStorage.getItem('syft_theme'),m=matchMedia('(prefers-color-scheme:dark)'),d=t==='dark'||(t!=='light'&&m.matches);if(d)document.documentElement.classList.add('dark');if(t!=='light'&&t!=='dark')m.addEventListener('change',function(e){document.documentElement.classList.toggle('dark',e.matches)})})()</script>
   <link rel="stylesheet" href="/src/styles/main.css">
   <script type="module" src="/src/pages/settings.js"></script>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50 text-gray-800 transition-colors">
   <nav class="lg:px-8 px-4 fixed top-0 left-0 w-full z-10">
       <div class="flex w-full justify-between py-3 h-16">
         <div class="flex sm:gap-3 gap-2 items-center">
@@ -88,10 +90,25 @@
     <div class="sm:max-w-md mx-auto lg:px-8 px-4 pt-16 pb-4 w-full">
       <h1 class="h-full font-semibold text-2xl transition-colors border-gray-200 border px-3 pb-3 mb-3 pt-40 rounded-md">Settings</h1>
 
-      <div class="p-4 mb-3 border-gray-200 border rounded-md">
-        <div class="space-y-3 text-sm">
-          <div class="flex justify-between items-baseline"><p class="text-gray-500">Email</p> <span id="user-email" class="block font-medium px-2 py-1"></span></div>
-          <div class="flex justify-between items-baseline"><p class="text-gray-500">Name</p> <span id="user-name" contenteditable="true" class="block px-2 py-1 font-medium outline-none cursor-text hover:bg-white hover:border-gray-300 border border-transparent focus:bg-white focus:border-gray-300 rounded transition-colors"></span></div>
+      <div class="p-4 mb-3 border-gray-200 border rounded-md transition-colors">
+        <div class="space-y-2 text-sm">
+          <h2 class="item-title leading-[24px] wrap-break-word text-pretty text-lg mb-3 font-medium outline-none transition-colors">Account</h2>
+          <div class="flex justify-between items-baseline"><p class="text-gray-500 transition-colors">Email</p> <span id="user-email" class="block font-medium px-2 py-1 transition-colors"></span></div>
+          <div class="flex justify-between items-baseline"><p class="text-gray-500 transition-colors">Name</p> <span id="user-name" contenteditable="true" class="block px-2 py-1 font-medium outline-none cursor-text hover:bg-white hover:border-gray-300 border border-transparent focus:bg-white focus:border-gray-300 rounded transition-colors"></span></div>
+        </div>
+      </div>
+
+      <div class="p-4 mb-3 border-gray-200 border rounded-md transition-colors">
+        <div class="space-y-2 text-sm">
+          <h2 class="item-title leading-[24px] wrap-break-word text-pretty text-lg mb-3 font-medium outline-none transition-colors">Interface</h2>
+          <div class="flex justify-between items-baseline">
+            <label class="text-gray-500 transition-colors">Appearance</label> 
+            <select id="appearance-select" class="block font-medium pl-1 pr-3 py-1 bg-transparent outline-none cursor-pointer border border-transparent hover:bg-white hover:border-gray-300 focus:bg-white focus:border-gray-300 rounded transition-colors">
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
         </div>
       </div>
 

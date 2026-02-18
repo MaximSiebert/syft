@@ -36,7 +36,7 @@ export function renderNavUser(el, user) {
       })
       .catch(() => {})
   } else {
-    el.innerHTML = `<a href="/login.html" class="text-sm text-gray-50 bg-orange-500 hover:bg-orange-600 transition-colors h-8 w-8 flex items-center justify-center rounded-full">${userIconSvg}</a>`
+    el.innerHTML = `<a href="/login.html" class="text-sm text-[#fafafa] bg-orange-500 hover:bg-orange-600 transition-colors h-8 w-8 flex items-center justify-center rounded-full">${userIconSvg}</a>`
     try { localStorage.removeItem('syft_nav_avatar') } catch {}
   }
 }
