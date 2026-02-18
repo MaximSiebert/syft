@@ -5,6 +5,7 @@ import { showToast } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
 import { setupScrollHide } from '../utils/scroll.js'
 import { renderNavUser } from '../utils/nav.js'
+import { initQuickSwitcher } from '../components/quick-switcher.js'
 
 const PAGE_SIZE = 64
 
@@ -93,6 +94,7 @@ async function init() {
   setupScrollHide()
 
   if (isOwnProfile) {
+    initQuickSwitcher()
     document.querySelector('main').classList.replace('lg:pb-8', 'sm:pb-18')
     document.querySelector('main').classList.replace('pb-4', 'pb-31')
     setupCreateButtons()

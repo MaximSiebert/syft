@@ -5,6 +5,7 @@ import { showToast, inlineConfirm } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
 import { setupScrollHide } from '../utils/scroll.js'
 import { renderNavUser } from '../utils/nav.js'
+import { initQuickSwitcher, trackRecentList } from '../components/quick-switcher.js'
 import Sortable from 'sortablejs'
 
 const PAGE_SIZE = 64
@@ -76,11 +77,22 @@ async function init() {
     await loadItems()
   }
 
+  trackRecentList({
+    id: list.id,
+    slug: list.slug || _slug,
+    name: list.name,
+    count: itemsOffset,
+    coverImages: cached
+      ? cached.items.map(li => li.items?.cover_image_url).filter(Boolean).slice(0, 3)
+      : []
+  })
+
   setupObserver()
   setupRemoveHandler()
   setupInlineEditing()
   setupDragReorder()
   setupScrollHide()
+  initQuickSwitcher()
 
   if (user) {
     document.querySelector('main').classList.replace('lg:pb-8', 'sm:pb-18')
