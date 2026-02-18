@@ -8,7 +8,7 @@ import { renderNavUser } from '../utils/nav.js'
 import { initQuickSwitcher, trackRecentList } from '../components/quick-switcher.js'
 import Sortable from 'sortablejs'
 
-const PAGE_SIZE = 64
+const PAGE_SIZE = 60
 
 let currentListId = null
 let currentListName = null
@@ -17,6 +17,7 @@ let itemsOffset = 0
 let hasMoreItems = true
 let isLoading = false
 let _listData = null
+let _pendingSave = null
 
 // Kick off data fetch at module level
 const _params = new URLSearchParams(window.location.search)
@@ -226,8 +227,11 @@ function loadList(user, list) {
           }
           if (newName === currentListName) return
 
+          if (_cacheKey) clearCache(_cacheKey)
+          const savePromise = updateList(currentListId, { name: newName })
+          _pendingSave = savePromise
           try {
-            const updated = await updateList(currentListId, { name: newName })
+            const updated = await savePromise
             currentListName = updated.name
             setAllNames(updated.name)
             document.title = `${updated.name} — Syft`
@@ -237,6 +241,8 @@ function loadList(user, list) {
           } catch (error) {
             setAllNames(currentListName)
             showToast(error.message, 'error')
+          } finally {
+            if (_pendingSave === savePromise) _pendingSave = null
           }
         })
       })
@@ -447,13 +453,18 @@ function setupInlineEditing() {
     const itemId = el.dataset.itemId
     const field = el.classList.contains('item-title') ? 'title' : el.dataset.field
 
+    if (_cacheKey) clearCache(_cacheKey)
+    const savePromise = updateItem(itemId, { [field]: newValue })
+    _pendingSave = savePromise
     try {
-      const updated = await updateItem(itemId, { [field]: newValue })
+      const updated = await savePromise
       el.dataset.original = updated[field]
       el.textContent = updated[field]
     } catch (error) {
       el.textContent = original
       showToast(error.message, 'error')
+    } finally {
+      if (_pendingSave === savePromise) _pendingSave = null
     }
   })
 }
@@ -466,6 +477,16 @@ document.addEventListener('paste', (e) => {
   const text = e.clipboardData.getData('text/plain')
   document.execCommand('insertText', false, text)
 })
+
+// Intercept link clicks while a save is in-flight to prevent request cancellation
+document.addEventListener('click', (e) => {
+  if (!_pendingSave) return
+  const link = e.target.closest('a[href]')
+  if (!link) return
+  e.preventDefault()
+  const href = link.href
+  _pendingSave.finally(() => { window.location.href = href })
+}, true)
 
 function setupObserver() {
   const sentinel = document.getElementById('load-more-sentinel')

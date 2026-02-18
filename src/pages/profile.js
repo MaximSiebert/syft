@@ -7,7 +7,7 @@ import { setupScrollHide } from '../utils/scroll.js'
 import { renderNavUser } from '../utils/nav.js'
 import { initQuickSwitcher } from '../components/quick-switcher.js'
 
-const PAGE_SIZE = 64
+const PAGE_SIZE = 60
 
 let currentUserId = null
 let offset = 0
