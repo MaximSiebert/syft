@@ -302,7 +302,7 @@ function renderItemCards(listItems) {
                   ? `<p class="item-desc leading-4 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2 outline-none" data-item-id="${item.id}" data-field="creator" data-original="${escapeHtml(item.creator)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.creator)}</p>`
                   : ''}
             </div>
-            ${isOwner ? `<div class="h-6 items-center sm:mt-3 mt-6 pt-2 text-xs border-t border-gray-200 transition-opacity "><button class="remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
+            ${isOwner ? `<div class="h-6 items-center mt-3 pt-2 text-xs border-t border-gray-200 transition-opacity "><button class="remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" id="Delete-Bin-3--Streamline-Micro" height="16" width="16">
                 <desc>
                   Delete Bin 3 Streamline Icon: https://streamlinehq.com
