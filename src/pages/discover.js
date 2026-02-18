@@ -122,6 +122,8 @@ async function loadAndRender() {
 
 
 
+  sentinel.classList.add('hidden')
+  container.style.minHeight = container.offsetHeight + 'px'
   container.innerHTML = ''
 
   if (currentSort === 'random') {
@@ -135,6 +137,7 @@ async function loadAndRender() {
     appendCards(newLists, newItems)
     updateSentinel()
   }
+  container.style.minHeight = ''
 }
 
 async function loadAll() {

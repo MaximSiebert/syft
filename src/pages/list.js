@@ -270,8 +270,12 @@ async function resetAndLoadItems() {
   if (_cacheKey) clearCache(_cacheKey)
   itemsOffset = 0
   hasMoreItems = true
-  document.getElementById('items-container').innerHTML = ''
+  document.getElementById('load-more-sentinel').classList.add('hidden')
+  const container = document.getElementById('items-container')
+  container.style.minHeight = container.offsetHeight + 'px'
+  container.innerHTML = ''
   await loadItems()
+  container.style.minHeight = ''
   isLoading = false
 }
 
