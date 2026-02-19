@@ -105,14 +105,25 @@
 
   <main class="lg:px-8 px-4 lg:pb-8 pb-4 pt-16">
 
-    <div class="relative transition-colors border border-gray-200 rounded-md px-3 pb-3" id="list-header">
-      <h1 class="list-name text-2xl font-semibold outline-none pt-40 leading-[24px]"><span class="skeleton-bar inline-block h-6 w-64 bg-gray-200 rounded animate-pulse"></span></h1>
-      <a id="list-author" href="#" class="mt-1 flex items-center gap-1 text-sm text-gray-500 group mt-2"><span class="skeleton-bar inline-block w-5 h-5 rounded-full bg-gray-200 animate-pulse shrink-0"></span><span class="skeleton-bar inline-block h-4 w-24 bg-gray-200 rounded animate-pulse"></span></a>
-      <button id="delete-list-btn" class="absolute top-3 right-3 text-sm bg-gray-50 hover:bg-white transition-colors w-8 h-8 flex items-center justify-center rounded-md hover:border-gray-300 border border-gray-200 cursor-pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" id="Remove-1--Streamline-Micro" height="12" width="12">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 5.4h9.72" stroke-width="1.2"></path>
-        </svg>
-      </button>
+    <div class="grid gap-3 xl:grid-cols-5 lg:grid-cols-4 md:grid-cols-3 grid-cols-2">
+      <div class="xl:col-span-3 lg:col-span-2 md:col-span-1 col-span-2 relative transition-colors border border-gray-200 rounded-md px-3 pb-3" id="list-header">
+        <h1 class="list-name text-2xl font-semibold outline-none pt-40 leading-[24px]"><span class="skeleton-bar inline-block h-6 w-64 bg-gray-200 rounded animate-pulse"></span></h1>
+        <a id="list-author" href="#" class="mt-1 flex items-center gap-1 text-sm text-gray-500 group mt-2"><span class="skeleton-bar inline-block w-5 h-5 rounded-full bg-gray-200 animate-pulse shrink-0"></span><span class="skeleton-bar inline-block h-4 w-24 bg-gray-200 rounded animate-pulse"></span></a>
+        <button id="delete-list-btn" class="absolute top-3 right-3 text-sm bg-gray-50 hover:bg-white transition-colors w-8 h-8 flex items-center justify-center rounded-md hover:border-gray-300 border border-gray-200 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" id="Remove-1--Streamline-Micro" height="12" width="12">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 5.4h9.72" stroke-width="1.2"></path>
+          </svg>
+        </button>
+      </div>
+      <div id="search-card" class="xl:col-span-2 md:col-span-2 col-span-2 relative border border-gray-200 hover:border-gray-300 hover:bg-white focus:bg-white focus:border-gray-300 transition-colors rounded-md px-3 pb-3 pt-3 items-end flex cursor-text">
+        <input id="search-input" type="text" placeholder="Search items..." autocomplete="off"
+          class="block w-full bg-transparent outline-none text-sm text-gray-800 placeholder-gray-500">
+        <button id="search-clear" class="hidden absolute md:top-3 top-1.5 right-1.5 bg-gray-50 hover:bg-white transition-colors w-8 h-8 flex items-center justify-center rounded-md hover:border-gray-300 border border-gray-200 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" height="12" width="12">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 0.54l9.72 9.72M10.26 0.54l-9.72 9.72" stroke-width="1.2"></path>
+          </svg>
+        </button>
+      </div>
     </div>
     <div id="items-container" class="flex flex-wrap gap-3"></div>
     <div id="load-more-sentinel" class="h-full transition-colors border-gray-200 border px-3 pb-3 pt-40 mt-3 rounded-md flex items-end">

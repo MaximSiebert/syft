@@ -18,6 +18,7 @@ let hasMoreItems = true
 let isLoading = false
 let _listData = null
 let _pendingSave = null
+let _searchCache = null
 
 // Kick off data fetch at module level
 const _params = new URLSearchParams(window.location.search)
@@ -93,6 +94,7 @@ async function init() {
   setupInlineEditing()
   setupDragReorder()
   setupScrollHide()
+  initSearch()
   initQuickSwitcher()
 
   if (user) {
@@ -266,6 +268,7 @@ function loadList(user, list) {
 
 async function resetAndLoadItems() {
   isLoading = true
+  _searchCache = null
   clearCache('discover')
   if (_cacheKey) clearCache(_cacheKey)
   itemsOffset = 0
@@ -491,6 +494,50 @@ document.addEventListener('click', (e) => {
   const href = link.href
   _pendingSave.finally(() => { window.location.href = href })
 }, true)
+
+function initSearch() {
+  const card = document.getElementById('search-card')
+  const input = document.getElementById('search-input')
+  const clearBtn = document.getElementById('search-clear')
+
+  card.addEventListener('click', () => input.focus())
+
+  input.addEventListener('input', async () => {
+    const q = input.value.trim().toLowerCase()
+
+    if (!q) {
+      clearBtn.classList.add('hidden')
+      _searchCache = null
+      await resetAndLoadItems()
+      return
+    }
+
+    clearBtn.classList.remove('hidden')
+
+    if (!_searchCache) {
+      _searchCache = await getListItems(currentListId)
+    }
+
+    const filtered = _searchCache.filter(li =>
+      li.items.title?.toLowerCase().includes(q) ||
+      li.items.creator?.toLowerCase().includes(q)
+    )
+
+    const container = document.getElementById('items-container')
+    document.getElementById('load-more-sentinel').classList.add('hidden')
+    container.innerHTML = filtered.length > 0
+      ? renderItemCards(filtered)
+      : '<div class="w-full relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-between h-full gap-1"><p class="sm:text-xl text-lg pt-40 font-medium">No results</p></div>'
+  })
+
+  clearBtn.addEventListener('click', (e) => {
+    e.stopPropagation()
+    input.value = ''
+    clearBtn.classList.add('hidden')
+    _searchCache = null
+    resetAndLoadItems()
+  })
+}
 
 function setupObserver() {
   const sentinel = document.getElementById('load-more-sentinel')
