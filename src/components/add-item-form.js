@@ -12,7 +12,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
 
   // Inject form HTML
   document.body.insertAdjacentHTML('beforeend', `
-    <form id="add-item-form" class="fixed bottom-0 left-0 w-full lg:px-8 px-4 py-3 z-20"${shouldAnimate ? ' style="transform:translateY(100%)"' : ''}>
+    <form id="add-item-form" class="fixed bottom-0 lg:right-8 right-4 lg:left-8 left-4 pb-3 z-20 bg-gray-50 rounded-t-[25px]"${shouldAnimate ? ' style="transform:translateY(100%)"' : ''}>
       <div class="relative shadow-lg bg-white sm:rounded-full rounded-md flex flex-wrap items-center border border-gray-200 hover:border-gray-300 transition-colors group">
         <div class="relative grow sm:w-auto w-full">
           <input type="text" id="add-item-input" placeholder="Paste a URL or write something short..." required
@@ -20,7 +20,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
           <span id="char-counter" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"></span>
         </div>
         <div class="sm:relative sm:min-w-72 sm:grow-0 grow text-ellipsis">
-          <button type="button" id="list-picker-btn" class="w-full bg-white px-3 py-3 text-sm text-left transition-colors h-12 border-l-0 border-r-0 outline-none truncate cursor-pointer flex items-center justify-between gap-2">
+          <button type="button" id="list-picker-btn" class="w-full bg-transparent px-3 py-3 text-sm text-left transition-colors h-12 border-l-0 border-r-0 outline-none truncate cursor-pointer flex items-center justify-between gap-2">
             <span id="list-picker-label" class="truncate">Select list</span>
             <svg id="list-picker-arrow" class="shrink-0 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" height="12" width="12">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 2.97 5.01768 7.668a0.54 0.54 0 0 0 0.76464 0L10.260000000000002 2.97" stroke-width="1.2"></path>
