@@ -13,29 +13,29 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
   // Inject form HTML
   document.body.insertAdjacentHTML('beforeend', `
     <form id="add-item-form" class="fixed bottom-0 left-0 w-full lg:px-8 px-4 py-3 z-20"${shouldAnimate ? ' style="transform:translateY(100%)"' : ''}>
-      <div class="grid grid-cols-6 sm:gap-3 gap-1">
-        <div class="relative md:col-span-4 sm:col-span-3 col-span-6">
+      <div class="bg-white rounded-full flex items-center border border-gray-200 hover:border-gray-300 transition-colors">
+        <div class="relative grow">
           <input type="text" id="add-item-input" placeholder="Paste a URL or write something short..." required
-            class="w-full text-ellipsis bg-white px-3 py-3 text-sm rounded-md transition-colors border-gray-200 hover:border-gray-300 h-12 focus:border-gray-300 border outline-none">
+            class="w-full text-ellipsis bg-white px-4 py-3 text-sm rounded-l-full transition-colors h-12 focus:border-gray-300 border-r-0 outline-none">
           <span id="char-counter" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"></span>
         </div>
-        <div class="md:col-span-2 sm:col-span-3 col-span-6 flex sm:gap-3 gap-1 items-center">
-          <div class="relative grow min-w-0">
-            <button type="button" id="list-picker-btn" class="w-full bg-white px-3 py-3 text-sm text-left rounded-md transition-colors border-gray-200 hover:border-gray-300 h-12 border outline-none truncate cursor-pointer flex items-center justify-between gap-2">
-              <span id="list-picker-label" class="truncate">Select list</span>
-              <svg id="list-picker-arrow" class="shrink-0 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" height="12" width="12">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 2.97 5.01768 7.668a0.54 0.54 0 0 0 0.76464 0L10.260000000000002 2.97" stroke-width="1.2"></path>
-              </svg>
+        <div class="relative sm:min-w-72 min-w-24 text-ellipsis">
+          <button type="button" id="list-picker-btn" class="w-full bg-white px-3 py-3 text-sm text-left transition-colors h-12 border-l-0 border-r-0 outline-none truncate cursor-pointer flex items-center justify-between gap-2">
+            <span id="list-picker-label" class="truncate">Select list</span>
+            <svg id="list-picker-arrow" class="shrink-0 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" height="12" width="12">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 2.97 5.01768 7.668a0.54 0.54 0 0 0 0.76464 0L10.260000000000002 2.97" stroke-width="1.2"></path>
+            </svg>
+          </button>
+          <div id="list-picker-dropdown" class="hidden absolute bottom-full mb-1 left-0 w-full bg-white border border-gray-200 rounded-md overflow-hidden">
+            <input type="text" id="list-picker-search" placeholder="Search lists..." class="w-full px-3 py-2 text-sm border-b border-gray-200 outline-none">
+            <div id="list-picker-items" class="overflow-y-auto max-h-[196px] py-2"></div>
+            <button type="button" id="list-picker-create" class="w-full px-3 py-2 text-sm text-left border-t border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">
+              New list +
             </button>
-            <div id="list-picker-dropdown" class="hidden absolute bottom-full mb-1 left-0 w-full bg-white border border-gray-200 rounded-md overflow-hidden">
-              <input type="text" id="list-picker-search" placeholder="Search lists..." class="w-full px-3 py-2 text-sm border-b border-gray-200 outline-none">
-              <div id="list-picker-items" class="overflow-y-auto max-h-[196px] py-2"></div>
-              <button type="button" id="list-picker-create" class="w-full px-3 py-2 text-sm text-left border-t border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">
-                New list +
-              </button>
-            </div>
           </div>
-          <button type="submit" class="text-sm text-[#fafafa] bg-orange-500 hover:bg-orange-600 transition-colors w-10 h-10 flex shrink-0 justify-center items-center rounded-full cursor-pointer">
+        </div>
+        <div class=" border-l-0 border-gray-200 w-12 h-12 flex items-center justify-center rounded-r-full">
+          <button type="submit" class="text-sm block text-[#fafafa] bg-orange-500 hover:bg-orange-600 transition-colors w-10 h-10 flex shrink-0 justify-center items-center rounded-full cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" height="12" width="12">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M5.4 0.54v9.72" stroke-width="1.2"></path>
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 5.4h9.72" stroke-width="1.2"></path>
