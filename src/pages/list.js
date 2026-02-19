@@ -97,7 +97,7 @@ async function init() {
 
   if (user) {
     document.querySelector('main').classList.replace('lg:pb-8', 'sm:pb-18')
-    document.querySelector('main').classList.replace('pb-4', 'pb-31')
+    document.querySelector('main').classList.replace('pb-4', 'pb-[122px]')
     await initAddItemForm({
       defaultListId: currentListId,
       onItemAdded: (listId) => { if (listId === currentListId) resetAndLoadItems() }
