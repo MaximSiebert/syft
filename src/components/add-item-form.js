@@ -26,12 +26,14 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 2.97 5.01768 7.668a0.54 0.54 0 0 0 0.76464 0L10.260000000000002 2.97" stroke-width="1.2"></path>
             </svg>
           </button>
-          <div id="list-picker-dropdown" class="hidden absolute bottom-full mb-2 left-0 w-full bg-white border border-gray-200 rounded-md overflow-hidden">
-            <input type="text" id="list-picker-search" placeholder="Search lists..." class="w-full px-3 py-2 text-sm border-b border-gray-200 outline-none">
-            <div id="list-picker-items" class="overflow-y-auto max-h-[196px] py-2"></div>
-            <button type="button" id="list-picker-create" class="w-full px-3 py-2 text-sm text-left border-t border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer">
-              New list +
-            </button>
+          <div id="list-picker-dropdown" class="group hidden absolute bottom-full pb-1 sm:bg-transparent bg-gray-50 rounded-t-md left-[-1px] sm:right-auto right-[-1px] sm:w-full">
+            <div class="bg-white border border-gray-200 group-hover:border-gray-300 transition-colors rounded-md overflow-hidden">
+              <input type="text" id="list-picker-search" placeholder="Search lists..." class="w-full px-3 py-2 text-sm border-b border-gray-200 group-hover:border-gray-300 transition-colors outline-none">
+              <div id="list-picker-items" class="overflow-y-auto max-h-[196px] py-2"></div>
+              <button type="button" id="list-picker-create" class="w-full px-3 py-2 text-sm text-left border-t border-gray-200 group-hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer">
+                New list +
+              </button>
+            </div>
           </div>
         </div>
         <div class="w-12 h-12 flex items-center justify-center rounded-r-full">
