@@ -12,7 +12,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
 
   // Inject form HTML
   document.body.insertAdjacentHTML('beforeend', `
-    <form id="add-item-form" class="fixed bottom-0 lg:right-8 right-4 lg:left-8 left-4 pb-3 z-20 bg-gray-50 rounded-t-[25px]"${shouldAnimate ? ' style="transform:translateY(100%)"' : ''}>
+    <form id="add-item-form" class="fixed bottom-0 lg:right-8 right-4 lg:left-8 left-4 pb-3 z-20 bg-gray-50 sm:rounded-t-[25px] rounded-md"${shouldAnimate ? ' style="transform:translateY(100%)"' : ''}>
       <div class="relative shadow-lg bg-white sm:rounded-full rounded-md flex flex-wrap items-center border border-gray-200 hover:border-gray-300 transition-colors group">
         <div class="relative grow sm:w-auto w-full">
           <input type="text" id="add-item-input" placeholder="Paste a URL or write something short..." required
@@ -151,6 +151,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
   function openDropdown() {
     dropdown.classList.remove('hidden')
     arrow.classList.add('rotate-180')
+    form.classList.remove('rounded-md')
     searchInput.value = ''
     renderItems()
     if (window.innerWidth >= 640) searchInput.focus()
@@ -159,6 +160,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
   function closeDropdown() {
     dropdown.classList.add('hidden')
     arrow.classList.remove('rotate-180')
+    form.classList.add('rounded-md')
     searchInput.value = ''
     focusedIndex = -1
   }
