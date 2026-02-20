@@ -176,28 +176,19 @@ function loadList(user, list) {
       history.replaceState(null, '', `/list.html?list=${list.slug}`)
     }
 
+
     const profile = list.profiles
     const authorEl = document.getElementById('list-author')
     if (profile) {
-      const creatorBtn = document.getElementById('creator-btn')
       const creatorName = profile.display_name || profile.email || ''
-      if (creatorBtn && creatorName) {
-        creatorBtn.textContent = creatorName
-        creatorBtn.href = `/profile.html?id=${profile.id}`
-      } else if (creatorBtn) {
-        creatorBtn.classList.add('hidden')
-      }
-
       if (authorEl && creatorName) {
         authorEl.innerHTML = `${profile.avatar_url ? `by <img src="${profile.avatar_url}" alt="" class="ml-1 w-5 h-5 rounded-full">` : ''} <span class="font-semibold text-gray-800 group-hover:underline">${escapeHtml(creatorName)}</span>`
         authorEl.href = `/profile.html?id=${profile.id}`
       } else if (authorEl) {
         authorEl.innerHTML = ''
       }
-    } else {
-      const creatorBtn = document.getElementById('creator-btn')
-      if (creatorBtn) creatorBtn.classList.add('hidden')
-      if (authorEl) authorEl.innerHTML = ''
+    } else if (authorEl) {
+      authorEl.innerHTML = ''
     }
 
     if (isOwner) {
