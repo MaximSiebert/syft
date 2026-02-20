@@ -17,7 +17,7 @@ export async function getLists(userId, { from, to } = {}) {
       *,
       list_items(
         added_at,
-        items:item_id(cover_image_url)
+        items:item_id(cover_image_url, url, title, type)
       )
     `)
     .eq('user_id', userId)
@@ -34,8 +34,8 @@ export async function getLists(userId, { from, to } = {}) {
     ...list,
     list_items: [{ count: list.list_items.length }],
     preview_items: list.list_items
-      .sort((a, b) => new Date(b.added_at) - new Date(a.added_at))
-      .slice(0, 3)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 9)
   }))
 }
 
@@ -261,7 +261,7 @@ export async function getAllLists({ from, to, sortBy = 'updated_at' } = {}) {
       profiles:user_id(id, display_name, avatar_url, email),
       list_items(
         added_at,
-        items:item_id(cover_image_url)
+        items:item_id(cover_image_url, url, title, type)
       )
     `)
     .order(sortBy, { ascending: false })
@@ -276,8 +276,8 @@ export async function getAllLists({ from, to, sortBy = 'updated_at' } = {}) {
     ...list,
     list_items: [{ count: list.list_items.length }],
     preview_items: list.list_items
-      .sort((a, b) => new Date(b.added_at) - new Date(a.added_at))
-      .slice(0, 3)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 9)
   }))
 }
 

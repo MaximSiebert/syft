@@ -67,7 +67,7 @@ async function renderInitialData() {
   const sentinel = document.getElementById('load-more-sentinel')
 
   // Try cache first for instant back-navigation
-  const cached = getCached('discover')
+  const cached = getCached('discover_v3')
   if (cached) {
     allLists = cached
     listsOffset = cached.length
@@ -85,7 +85,7 @@ async function renderInitialData() {
     listsOffset = lists.length
     if (lists.length < PAGE_SIZE) hasMoreLists = false
     container.insertAdjacentHTML('beforeend', lists.map(renderListCard).join(''))
-    setCache('discover', lists)
+    setCache('discover_v3', lists)
     updateSentinel()
   } catch (error) {
     showToast(error.message, 'error')
@@ -110,7 +110,7 @@ function resetState() {
 
 async function resetAndLoad() {
   isLoading = true
-  clearCache('discover')
+  clearCache('discover_v3')
   resetState()
   await loadAndRender()
   isLoading = false
@@ -332,16 +332,26 @@ function updateControls() {
 }
 
 function renderListCard(list) {
-  const coverImages = (list.preview_items || [])
-    .map(pi => pi.items?.cover_image_url)
-    .filter(Boolean)
-    .slice(0, 3)
+  const allItems = (list.preview_items || []).map(pi => pi.items)
 
-  const previewCircles = coverImages.length > 0
-    ? `<div class="flex -space-x-3">
-        ${coverImages.map(url => `
-          <div class="w-8 bg-gray-50 h-8 rounded-full border-3 border-white overflow-hidden bg-gray-100 relative after:inset-shadow-[0_0px_2px_rgba(0,0,0,0.2)] after:rounded-full after:content-[''] after:absolute after:inset-0">
-            <img src="${url}" alt="" class="w-full h-full object-cover block">
+  const coverImages = allItems
+    .filter(item => item?.cover_image_url)
+    .slice(0, 9)
+
+  const textItems = allItems
+    .filter(item => item?.type === 'text' && !item?.cover_image_url)
+    .slice(0, 9 - coverImages.length)
+
+  const previewCircles = (coverImages.length > 0 || textItems.length > 0)
+    ? `<div class="flex gap-1.5 overflow-x-scroll px-3 mb-4 scrollbar-track-transparent scrollbar-thumb-transparent scrollbar-thin">
+        ${coverImages.map(item => `
+          <a href="${item.url}" target="_blank" rel="noopener" class="aspect-square flex justify-center items-center p-1 w-16 h-16 border border-gray-100 hover:border-gray-200 transition-colors rounded-[3px]">
+            <img src="${item.cover_image_url}" alt="" class="h-full object-contain rounded-[3px]">
+          </a>
+        `).join('')}
+        ${textItems.map(item => `
+          <div class="aspect-square flex items-end p-1 w-16 h-16 border border-gray-100 transition-colors rounded-[3px]">
+            <p class="text-[10px] leading-3 font-medium text-gray-500 line-clamp-3 overflow-hidden text-ellipsis">${escapeHtml(item.title)}</p>
           </div>
         `).join('')}
       </div>`
@@ -350,20 +360,19 @@ function renderListCard(list) {
   const profile = list.profiles
   const creatorHtml = profile
     ? profile.avatar_url
-      ? `<div class="mt-3 pt-2 text-xs border-t border-gray-200 transition-opacity"><a href="/profile.html?id=${profile.id}" class="text-xs font-medium text-gray-800 hover:underline">${escapeHtml(profile.display_name || profile.email)}</a></div>`
-      : `<div class="mt-3 pt-2 text-xs border-t border-gray-200 transition-opacity"><a href="/profile.html?id=${profile.id}" class="text-xs font-medium text-gray-800 hover:underline">${escapeHtml(profile.display_name || profile.email)}</a></div>`
+      ? `<div class="pb-3 ml-3 mr-3 pt-2 text-xs border-t border-gray-200 transition-opacity"><a href="/profile.html?id=${profile.id}" class="text-xs font-medium text-gray-800 hover:underline">${escapeHtml(profile.display_name || profile.email)}</a></div>`
+      : `<div class="pb-3 pt-2 text-xs border-t border-gray-200 transition-opacity"><a href="/profile.html?id=${profile.id}" class="text-xs font-medium text-gray-800 hover:underline">${escapeHtml(profile.display_name || profile.email)}</a></div>`
     : ''
 
   return `
-    <div class="group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col justify-end h-full gap-1">
+    <div class="group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md flex flex-col justify-end h-full gap-1">
       <div class="">
-        <h3 class="wrap-break-word text-pretty sm:text-xl leading-5 pb-[2px] text-lg font-medium text-ellipsis line-clamp-3 mb-1"><a href="/list.html?list=${list.slug}" class="pt-24 block hover:underline">${escapeHtml(list.name)}</a></h3>
-        </div>
-        <div>
+        <h3 class="px-3 wrap-break-word text-pretty leading-5 pb-[2px] text-xl font-medium text-ellipsis line-clamp-3 mb-3">
+          <a href="/list.html?list=${list.slug}" class="aspect-[5/3] flex items-end block hover:underline">${escapeHtml(list.name)}</a>
+        </h3>
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1 h-8">
+          <div class="flex items-center w-full overflow-hidden">
             ${previewCircles}
-            <p class="sm:text-sm text-xs text-gray-500">${list.list_items[0].count} ${list.list_items[0].count === 1 ? 'item' : 'items'}</p>
           </div>
         </div>
         ${creatorHtml}
