@@ -367,9 +367,10 @@ function renderListCard(list) {
   return `
     <div class="group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md flex flex-col justify-end h-full gap-1">
       <div class="">
-        <h3 class="px-3 wrap-break-word text-pretty leading-5 pb-[2px] text-xl font-medium text-ellipsis line-clamp-3 mb-3">
+        <h3 class="px-3 wrap-break-word text-pretty leading-5 pb-[3px] text-xl font-medium text-ellipsis line-clamp-3">
           <a href="/list.html?list=${list.slug}" class="aspect-[5/3] flex items-end block hover:underline">${escapeHtml(list.name)}</a>
         </h3>
+        <p class="px-3 text-xs font-medium text-gray-500 mb-3">${list.list_items[0].count} item${list.list_items[0].count === 1 ? '' : 's'}</p>
         <div class="flex items-center justify-between">
           <div class="flex items-center w-full overflow-hidden">
             ${previewCircles}

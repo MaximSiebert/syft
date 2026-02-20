@@ -198,7 +198,7 @@ function renderListCard(list) {
       <h3 class="wrap-break-word text-pretty sm:text-xl text-lg leading-5 pb-[2px] pt-24 font-medium text-ellipsis line-clamp-3 hover:underline mb-1">${escapeHtml(list.name)}</h3>
       <div class="flex items-center gap-1 h-8">
         ${previewCircles}
-        <p class="sm:text-sm text-xs text-gray-500">${list.list_items[0].count} ${list.list_items[0].count === 1 ? 'item' : 'items'}</p>
+        <p class="text-xs font-medium text-gray-500">${list.list_items[0].count} ${list.list_items[0].count === 1 ? 'item' : 'items'}</p>
       </div>
     </a>
   `
