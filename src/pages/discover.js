@@ -351,7 +351,7 @@ function renderListCard(list) {
         `).join('')}
         ${textItems.map(item => `
           <div class="aspect-square flex items-end p-1 w-16 h-16 border border-gray-100 transition-colors rounded-[3px]">
-            <p class="text-[10px] leading-3 font-medium text-gray-500 line-clamp-3 overflow-hidden text-ellipsis">${escapeHtml(item.title)}</p>
+            <p class="text-[10px] leading-3 font-medium text-gray-500 line-clamp-2 overflow-hidden text-ellipsis">${escapeHtml(item.title)}</p>
           </div>
         `).join('')}
       </div>`
