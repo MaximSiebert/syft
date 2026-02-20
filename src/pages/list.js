@@ -115,7 +115,7 @@ async function init() {
       deleteBtn.dataset.confirming = 'true'
 
       // Expand button
-      deleteBtn.classList.remove('w-8', 'h-8', 'hover:bg-white')
+      deleteBtn.classList.remove('w-8', 'h-8', 'hover:bg-white', 'active:scale-95')
       deleteBtn.classList.add('sm:w-60', 'sm:left-auto', 'left-3', 'h-12', 'px-3', 'bg-white')
 
       // Replace icon with confirm input
@@ -129,7 +129,7 @@ async function init() {
 
       const reset = () => {
         deleteBtn.classList.remove('sm:w-60', 'left-3', 'sm:left-3', 'h-12', 'px-3')
-        deleteBtn.classList.add('w-8', 'h-8')
+        deleteBtn.classList.add('w-8', 'h-8', 'active:scale-95')
         deleteBtn.innerHTML = originalHtml
         delete deleteBtn.dataset.confirming
       }
