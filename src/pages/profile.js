@@ -55,7 +55,7 @@ async function init() {
       container.innerHTML = `
         <div class="relative group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md p-3 flex flex-col sm:col-span-1 col-span-2 justify-between h-full gap-1">
           <p class="leading-[24px] sm:text-xl text-lg pt-30 font-medium">Create your first list</p>
-          <button data-expand-full class="absolute top-3 right-3 create-list-btn text-sm hover:border-gray-300 focus:border-gray-300 border border-gray-200 cursor-pointer bg-gray-50 hover:bg-white focus:bg-white transition-colors h-8 w-8 flex items-center justify-center rounded-md">
+          <button data-expand-full class="active:scale-95 absolute top-3 right-3 create-list-btn text-sm hover:border-gray-300 focus:border-gray-300 border border-gray-200 cursor-pointer bg-gray-50 hover:bg-white focus:bg-white transition-colors h-8 w-8 flex items-center justify-center rounded-md">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" id="Add-1--Streamline-Micro" height="12" width="12">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M5.4 0.54v9.72" stroke-width="1.2"></path>
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 5.4h9.72" stroke-width="1.2"></path>
@@ -214,7 +214,7 @@ function setupCreateButtons() {
 
       // Expand button
       const expandFull = btn.hasAttribute('data-expand-full')
-      btn.classList.remove('w-8', 'h-8', 'hover:bg-white')
+      btn.classList.remove('w-8', 'h-8', 'hover:bg-white', 'active:scale-95')
       btn.classList.add('h-12', 'px-3', 'bg-white')
       if (expandFull) {
         btn.classList.add('left-3')
@@ -238,7 +238,7 @@ function setupCreateButtons() {
         } else {
           btn.classList.remove('sm:w-60', 'left-3')
         }
-        btn.classList.add('w-8', 'h-8')
+        btn.classList.add('w-8', 'h-8', 'active:scale-95')
         btn.innerHTML = originalHtml
         delete btn.dataset.expanding
       }
