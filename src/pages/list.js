@@ -108,6 +108,9 @@ async function init() {
 
   if (isOwner) {
     const deleteBtn = document.getElementById('delete-list-btn')
+    // Show delete button for owner
+    if (deleteBtn) deleteBtn.classList.remove('hidden')
+
     deleteBtn?.addEventListener('click', () => {
       if (deleteBtn.dataset.confirming === 'true') return
 
@@ -151,10 +154,6 @@ async function init() {
 
       input.addEventListener('blur', () => reset())
     })
-  } else {
-    // Read-only: hide owner controls
-    const deleteBtn = document.getElementById('delete-list-btn')
-    if (deleteBtn) deleteBtn.style.display = 'none'
   }
 }
 
