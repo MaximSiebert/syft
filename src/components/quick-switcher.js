@@ -39,7 +39,7 @@ export function initQuickSwitcher() {
     const images = (list.coverImages || []).slice(0, 3)
     const circles = images.length > 0
       ? `<span class="flex -space-x-2">${images.map(url =>
-          `<span class="w-6 h-6 rounded-full border-2 border-white overflow-hidden bg-gray-100"><img src="${escapeHtml(url)}" alt="" class="w-full h-full object-cover"></span>`
+          `<span class="w-6 h-6 rounded-full border-2 border-white overflow-hidden bg-gray-100"><img src="${escapeHtml(url)}" alt="" loading="lazy" class="w-full h-full object-cover"></span>`
         ).join('')}</span>`
       : ''
 

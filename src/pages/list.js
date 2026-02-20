@@ -94,7 +94,7 @@ async function init() {
   setupInlineEditing()
   setupDragReorder()
   setupScrollHide()
-  initSearch()
+  await initSearch()
   initQuickSwitcher()
 
   if (user) {
@@ -305,7 +305,7 @@ function renderItemCards(listItems) {
         <div class="group hover:border-gray-300 border bg-white border-gray-200 transition-colors rounded-md p-3 h-full flex flex-col">
           ${item.cover_image_url
             ? `<div><a class="mb-3 grow-0 aspect-square flex justify-center items-center sm:p-3 p-1.5 border border-gray-100 group-hover:border-gray-200 transition-colors rounded-[3px]" href="${item.url}" target="_blank" rel="noopener">
-                  <img src="${item.cover_image_url}" alt="${escapeHtml(item.title)}" class="h-full object-contain ${item.type === 'artist' ? 'rounded-full' : 'rounded-[3px]'}">
+                  <img src="${item.cover_image_url}" alt="${escapeHtml(item.title)}" loading="lazy" class="h-full object-contain ${item.type === 'artist' ? 'rounded-full' : 'rounded-[3px]'}">
                 </a></div>`
             : ''
           }
@@ -487,10 +487,16 @@ document.addEventListener('click', (e) => {
   _pendingSave.finally(() => { window.location.href = href })
 }, true)
 
-function initSearch() {
+async function initSearch() {
   const card = document.getElementById('search-card')
   const input = document.getElementById('search-input')
   const clearBtn = document.getElementById('search-clear')
+
+  // Fetch all items to get count for placeholder
+  if (!_searchCache) {
+    _searchCache = await getListItems(currentListId)
+  }
+  input.placeholder = `Search ${_searchCache.length} item${_searchCache.length === 1 ? '' : 's'}...`
 
   card.addEventListener('click', () => input.focus())
 

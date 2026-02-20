@@ -346,7 +346,7 @@ function renderListCard(list) {
     ? `<div class="flex gap-1.5 overflow-x-scroll px-3 mb-4 scrollbar-track-transparent scrollbar-thumb-transparent scrollbar-thin">
         ${coverImages.map(item => `
           <a href="${item.url}" target="_blank" rel="noopener" class="aspect-square flex justify-center items-center p-1 w-16 h-16 border border-gray-100 hover:border-gray-200 transition-colors rounded-[3px]">
-            <img src="${item.cover_image_url}" alt="" class="h-full object-contain rounded-[3px]">
+            <img src="${item.cover_image_url}" alt="" loading="lazy" class="h-full object-contain rounded-[3px]">
           </a>
         `).join('')}
         ${textItems.map(item => `
@@ -402,7 +402,7 @@ function renderItemCard(item) {
       <div class="relative group hover:border-gray-300 border bg-white border-gray-200 transition-colors rounded-md p-3 h-full flex flex-col">
         ${item.cover_image_url
           ? `<div><a class="mb-3 grow-0 aspect-square flex justify-center items-center p-6 bg-white border border-gray-100 group-hover:border-gray-200 transition-colors rounded-[3px]" href="${item.url}" target="_blank" rel="noopener">
-              <img src="${item.cover_image_url}" alt="${escapeHtml(item.title)}" class="h-full object-contain ${item.type === 'artist' ? 'rounded-full' : 'rounded-[3px]'}">
+              <img src="${item.cover_image_url}" alt="${escapeHtml(item.title)}" loading="lazy" class="h-full object-contain ${item.type === 'artist' ? 'rounded-full' : 'rounded-[3px]'}">
             </a></div>`
           : ''
         }

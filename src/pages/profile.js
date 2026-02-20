@@ -187,7 +187,7 @@ function renderListCard(list) {
     ? `<div class="flex -space-x-3">
         ${coverImages.map(url => `
           <div class="w-8 bg-gray-50 h-8 rounded-full border-3 border-white overflow-hidden bg-gray-100 relative after:inset-shadow-[0_0px_2px_rgba(0,0,0,0.2)] after:rounded-full after:content-[''] after:absolute after:inset-0">
-            <img src="${url}" alt="" class="w-full h-full object-cover">
+            <img src="${url}" alt="" loading="lazy" class="w-full h-full object-cover">
           </div>
         `).join('')}
       </div>`
