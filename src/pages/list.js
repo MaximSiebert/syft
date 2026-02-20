@@ -219,7 +219,11 @@ function loadList(user, list) {
           }
           if (newName === currentListName) return
 
+          // Clear caches: list page, profile page, and discover page
           if (_cacheKey) clearCache(_cacheKey)
+          clearCache('discover_v3')
+          if (_listData?.user_id) clearCache('profile:' + _listData.user_id)
+
           const savePromise = updateList(currentListId, { name: newName })
           _pendingSave = savePromise
           try {
