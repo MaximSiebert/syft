@@ -20,7 +20,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
           <span id="char-counter" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"></span>
         </div>
         <div class="sm:relative sm:min-w-72 sm:grow-0 grow text-ellipsis">
-          <button type="button" id="list-picker-btn" class="relative before:left-0 before:absolute before:w-[1px] before:h-5 before:transition-colors group-hover:before:bg-gray-300 before:bg-gray-200 before:sm:block before:hidden w-full bg-transparent sm:pl-4 pl-3 pr-3 py-3 text-sm text-left transition-colors h-12 outline-none truncate cursor-pointer flex items-center gap-2">
+          <button type="button" id="list-picker-btn" class="relative before:left-0 before:absolute before:w-[1px] before:h-5 before:transition-colors group-hover:before:bg-gray-300 before:bg-gray-200 before:sm:block before:hidden w-full bg-transparent sm:pl-4 pl-3 pr-3 py-3 text-sm text-left text-gray-500 hover:text-gray-800 transition-colors h-12 outline-none truncate cursor-pointer flex items-center gap-2">
             <span id="list-picker-label" class="truncate w-full">Select list</span>
             <svg id="list-picker-arrow" class="shrink-0 transition-transform duration-200 w-2.5 h-2.5 justify-self-end" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" height="12" width="12">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 2.97 5.01768 7.668a0.54 0.54 0 0 0 0.76464 0L10.260000000000002 2.97" stroke-width="1.2"></path>
