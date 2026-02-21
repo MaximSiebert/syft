@@ -124,7 +124,7 @@ export function initQuickSwitcher() {
       <div id="quick-switcher-overlay" class="fixed inset-0 bg-gray-200/50 z-50 flex items-start justify-center pt-[20vh]">
         <div id="quick-switcher" class="shadow-xl bg-white rounded-md w-full max-w-md overflow-hidden mx-4">
           <input id="qs-search" type="text" placeholder="Jump to list..." autocomplete="off"
-            class="w-full px-4 py-3 text-sm border-b border-gray-200 outline-none">
+            class="w-full px-4 py-3 text-sm border-b border-gray-200 outline-none placeholder:text-gray-500">
           <div id="qs-results" class="overflow-y-auto max-h-[360px]"></div>
         </div>
       </div>
