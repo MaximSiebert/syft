@@ -365,4 +365,23 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
       submitBtn.disabled = false
     }
   })
+
+  // Return API for external updates
+  return {
+    updateListName: (listId, newName) => {
+      // Update in userLists array
+      const list = userLists.find(l => l.id === listId)
+      if (list) {
+        list.name = newName
+        // Update label if this is the currently selected list
+        if (selectedListId === listId) {
+          label.textContent = newName
+        }
+        // Re-render dropdown items if open
+        if (!dropdown.classList.contains('hidden')) {
+          renderItems(searchInput.value)
+        }
+      }
+    }
+  }
 }

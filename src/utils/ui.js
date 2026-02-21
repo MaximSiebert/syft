@@ -1,6 +1,6 @@
 export function showToast(message, type = 'info') {
   const toast = document.createElement('div')
-  toast.className = 'fixed top-3 lg:right-8 right-4 lg:left-8 left-4 px-4 h-10 flex items-center justify-center bg-white/40 backdrop-blur-lg font-medium text-sm text-center z-50 transition-all duration-300 rounded-full border border-gray-200'
+  toast.className = 'fixed shadow-md top-3 left-1/2 transform -translate-x-1/2 px-6 h-10 flex items-center justify-center bg-white font-medium text-sm text-center z-50 transition-all duration-300 rounded-full border border-gray-200'
   toast.style.transform = 'translateY(-100%)'
   toast.style.opacity = '0'
   toast.textContent = message

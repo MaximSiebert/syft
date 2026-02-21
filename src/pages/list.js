@@ -5,7 +5,7 @@ import { showToast, inlineConfirm } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
 import { setupScrollHide } from '../utils/scroll.js'
 import { renderNavUser } from '../utils/nav.js'
-import { initQuickSwitcher, trackRecentList } from '../components/quick-switcher.js'
+import { initQuickSwitcher, trackRecentList, updateRecentListName } from '../components/quick-switcher.js'
 import Sortable from 'sortablejs'
 
 const PAGE_SIZE = 60
@@ -19,6 +19,7 @@ let isLoading = false
 let _listData = null
 let _pendingSave = null
 let _searchCache = null
+let _addItemFormApi = null
 
 // Kick off data fetch at module level
 const _params = new URLSearchParams(window.location.search)
@@ -100,9 +101,14 @@ async function init() {
   if (user) {
     document.querySelector('main').classList.replace('lg:pb-8', 'sm:pb-18')
     document.querySelector('main').classList.replace('pb-4', 'pb-[122px]')
-    await initAddItemForm({
+    _addItemFormApi = await initAddItemForm({
       defaultListId: currentListId,
-      onItemAdded: (listId) => { if (listId === currentListId) resetAndLoadItems() }
+      onItemAdded: async (listId) => {
+        if (listId === currentListId) {
+          await resetAndLoadItems()
+          updateSearchPlaceholder()
+        }
+      }
     })
   }
 
@@ -233,6 +239,12 @@ function loadList(user, list) {
             document.title = `${updated.name} — Syft`
             if (updated.slug) {
               history.replaceState(null, '', `/list.html?list=${updated.slug}`)
+              // Update quick switcher with new name and slug
+              updateRecentListName(currentListId, updated.name, updated.slug)
+              // Update add-item-form list picker
+              if (_addItemFormApi) {
+                _addItemFormApi.updateListName(currentListId, updated.name)
+              }
             }
           } catch (error) {
             setAllNames(currentListName)
@@ -389,6 +401,7 @@ function setupRemoveHandler() {
       await removeItemFromList(btn.dataset.itemId)
       showToast('Item removed', 'success')
       await resetAndLoadItems()
+      updateSearchPlaceholder()
     } catch (error) {
       showToast(error.message, 'error')
     }
@@ -489,6 +502,15 @@ document.addEventListener('click', (e) => {
   const href = link.href
   _pendingSave.finally(() => { window.location.href = href })
 }, true)
+
+async function updateSearchPlaceholder() {
+  const input = document.getElementById('search-input')
+  if (!input) return
+
+  // Refresh cache and update placeholder
+  _searchCache = await getListItems(currentListId)
+  input.placeholder = `Search ${_searchCache.length} item${_searchCache.length === 1 ? '' : 's'}...`
+}
 
 async function initSearch() {
   const card = document.getElementById('search-card')

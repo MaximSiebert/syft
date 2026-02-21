@@ -20,6 +20,19 @@ export function trackRecentList({ id, slug, name, count, coverImages }) {
   } catch {}
 }
 
+export function updateRecentListName(id, name, slug) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]')
+    const recent = Array.isArray(parsed) ? parsed : []
+    const updated = recent.map(l =>
+      String(l.id) === String(id) ? { ...l, name, slug } : l
+    )
+    localStorage.setItem(RECENT_KEY, JSON.stringify(updated))
+  } catch (e) {
+    console.error('Failed to update recent list name:', e)
+  }
+}
+
 export function initQuickSwitcher() {
   let overlay = null
   let searchInput = null
@@ -63,7 +76,11 @@ export function initQuickSwitcher() {
     const recent = getRecent()
     const recentIds = new Set(recent.map(r => r.id))
     const recentMapped = recent
-      .map(r => allLists.find(l => l.id === r.id))
+      .map(r => {
+        const list = allLists.find(l => String(l.id) === String(r.id))
+        // Prefer updated name/slug from recent lists over allLists
+        return list ? { ...list, name: r.name, slug: r.slug, count: r.count } : null
+      })
       .filter(Boolean)
     const rest = allLists.filter(l => !recentIds.has(l.id))
     const merged = [...recentMapped, ...rest]
