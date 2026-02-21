@@ -104,7 +104,8 @@ async function init() {
     document.querySelector('main').classList.replace('pb-4', 'pb-[122px]')
     setupCreateButtons()
     await initAddItemForm({
-      onListCreated: () => resetAndLoad()
+      onListCreated: () => resetAndLoad(),
+      getListItems: null  // No duplicate checking on profile page
     })
   }
 }

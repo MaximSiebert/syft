@@ -1,5 +1,6 @@
 import { getLists, createList, addItemToList, addTextItemToList } from '../lib/db.js'
 import { showToast } from '../utils/ui.js'
+import { normalizeUrl } from '../utils/url-normalizer.js'
 
 function escapeHtml(text) {
   const div = document.createElement('div')
@@ -7,7 +8,7 @@ function escapeHtml(text) {
   return div.innerHTML
 }
 
-export async function initAddItemForm({ defaultListId, onItemAdded, onListCreated } = {}) {
+export async function initAddItemForm({ defaultListId, onItemAdded, onListCreated, getListItems } = {}) {
   const shouldAnimate = !Object.keys(localStorage).some(k => /^sb-.*-auth-token$/.test(k))
 
   // Inject form HTML
@@ -36,7 +37,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
             </div>
           </div>
         </div>
-        <div class="w-10 pr-2 h-12 flex items-center justify-center rounded-r-full">
+        <div class="w-10 pr-2 h-12 flex items-center justify-center rounded-r-full transition-all duration-300">
           <button type="submit" class="active:scale-95 text-sm block text-[#fafafa] bg-orange-500 hover:bg-orange-600 transition-colors w-8 h-8 flex shrink-0 justify-center items-center rounded-full cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" height="12" width="12">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M5.4 0.54v9.72" stroke-width="1.2"></path>
@@ -55,6 +56,60 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
 
   function isUrl(val) {
     return /^https?:\/\//i.test(val)
+  }
+
+  async function isDuplicate(url, listId) {
+    // Only check if we have a getListItems callback and a selected list
+    if (!getListItems || !listId) return false
+
+    try {
+      const items = await getListItems(listId)
+      const normalized = normalizeUrl(url)
+
+      return items.some(listItem => {
+        const itemUrl = listItem.items?.url
+        if (!itemUrl) return false
+        return normalizeUrl(itemUrl) === normalized
+      })
+    } catch {
+      // If we can't fetch items, don't block the add operation
+      return false
+    }
+  }
+
+  async function animateDuplicateMessage(btn, plusIcon) {
+    return new Promise((resolve) => {
+      // Duplicate icon (overlapping squares)
+      const duplicateIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" height="12" width="12">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M12.240000000000002 3.6000000000000005h-7.200000000000001c-0.7952832000000001 0 -1.4400000000000002 0.6447168000000001 -1.4400000000000002 1.4400000000000002v7.200000000000001c0 0.7952832000000001 0.6447168000000001 1.4400000000000002 1.4400000000000002 1.4400000000000002h7.200000000000001c0.7952832000000001 0 1.4400000000000002 -0.6447168000000001 1.4400000000000002 -1.4400000000000002v-7.200000000000001c0 -0.7952832000000001 -0.6447168000000001 -1.4400000000000002 -1.4400000000000002 -1.4400000000000002Z" stroke-width="1.6"></path>
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.7200000000000001 10.68912V2.16c0 -0.38191680000000006 0.15171408000000003 -0.7481808000000001 0.42176592000000007 -1.0182340800000003C1.4118192000000003 0.8717140800000002 1.7780832000000002 0.7200000000000001 2.16 0.7200000000000001h8.52912" stroke-width="1.6"></path>
+      </svg>`
+
+      // Replace spinner with duplicate icon
+      btn.innerHTML = duplicateIcon
+
+      // Add shake animation
+      const keyframes = [
+        { transform: 'translateX(0)' },
+        { transform: 'translateX(-2px)' },
+        { transform: 'translateX(2px)' },
+        { transform: 'translateX(-2px)' },
+        { transform: 'translateX(2px)' },
+        { transform: 'translateX(0)' }
+      ]
+      const timing = {
+        duration: 400,
+        iterations: 1
+      }
+      btn.animate(keyframes, timing)
+
+      // After shake, reset to plus icon
+      setTimeout(() => {
+        btn.innerHTML = plusIcon
+        btn.disabled = false
+        resolve()
+      }, 800)
+    })
   }
 
   addInput.addEventListener('input', () => {
@@ -344,7 +399,14 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
         if (onListCreated) onListCreated(list.id)
       }
 
+      // Check for duplicates if URL
       if (isUrl(value)) {
+        const duplicate = await isDuplicate(value, selectedListId)
+        if (duplicate) {
+          // Animate button to show duplicate message
+          await animateDuplicateMessage(submitBtn, plusIcon)
+          return
+        }
         await addItemToList(value, selectedListId)
       } else {
         await addTextItemToList(value, selectedListId)

@@ -44,7 +44,8 @@ async function init() {
     document.querySelector('main').classList.replace('pb-4', 'pb-[122px]')
     await initAddItemForm({
       onItemAdded: () => resetAndLoad(),
-      onListCreated: () => resetAndLoad()
+      onListCreated: () => resetAndLoad(),
+      getListItems: null  // No duplicate checking on discover page
     })
 
     // Handle Web Share Target: pre-fill input with shared URL

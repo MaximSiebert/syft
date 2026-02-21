@@ -108,6 +108,10 @@ async function init() {
           await resetAndLoadItems()
           updateSearchPlaceholder()
         }
+      },
+      getListItems: async (listId) => {
+        // Return fresh items for duplicate checking
+        return await getListItems(listId)
       }
     })
   }
