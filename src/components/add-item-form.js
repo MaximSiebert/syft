@@ -116,13 +116,16 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
     const val = addInput.value
     if (isUrl(val)) {
       charCounter.classList.add('hidden')
+      addInput.classList.remove('pr-16')
       addInput.removeAttribute('maxlength')
     } else if (val.length > 0) {
       addInput.setAttribute('maxlength', TEXT_MAX)
       charCounter.textContent = `${val.length}/${TEXT_MAX}`
       charCounter.classList.remove('hidden')
+      addInput.classList.add('pr-16')
     } else {
       charCounter.classList.add('hidden')
+      addInput.classList.remove('pr-16')
       addInput.removeAttribute('maxlength')
     }
   })
