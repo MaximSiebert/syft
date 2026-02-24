@@ -346,7 +346,7 @@ function renderListCard(list) {
   const previewCircles = (coverImages.length > 0 || textItems.length > 0)
     ? `<div class="flex gap-1.5 overflow-x-scroll px-3 scrollbar-track-transparent scrollbar-thumb-transparent scrollbar-thin">
         ${coverImages.map(item => `
-          <a href="${item.url}" target="_blank" rel="noopener" class="aspect-square flex justify-center items-center p-1 w-16 h-16 border border-gray-200 hover:border-gray-300 transition-colors rounded-[3px]">
+          <a href="${item.url}" target="_blank" rel="noopener" class="active:scale-95 aspect-square flex justify-center items-center p-1 w-16 h-16 border border-gray-200 hover:border-gray-300 transition-colors rounded-[3px]">
             <img src="${item.cover_image_url}" alt="" loading="lazy" class="h-full object-contain rounded-[3px]">
           </a>
         `).join('')}

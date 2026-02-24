@@ -303,7 +303,7 @@ function renderItemCards(listItems) {
             <h3 class="item-title leading-[24px] wrap-break-word text-pretty sm:text-xl text-lg pt-24 font-medium outline-none" data-item-id="${item.id}" data-original="${escapeHtml(item.title)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.title)}</h3>
             ${isOwner ? `
             <div class="h-6 items-center mt-2 pt-2 text-xs border-t border-gray-200 transition-opacity">
-              <button class="active:scale-95 h-4 remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
+              <button class="h-4 remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
                 <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" id="Delete-Bin-3--Streamline-Micro" height="16" width="16">
                   <desc>
                     Delete Bin 3 Streamline Icon: https://streamlinehq.com
@@ -323,7 +323,7 @@ function renderItemCards(listItems) {
       <div class="min-w-0" data-item-id="${listItem.id}">
         <div class="group hover:border-gray-300 border bg-white border-gray-200 transition-colors rounded-md p-3 h-full flex flex-col">
           ${item.cover_image_url
-            ? `<div><a class="mb-3 grow-0 aspect-square flex justify-center items-center sm:p-3 p-1.5 border border-gray-100 group-hover:border-gray-200 transition-colors rounded-[3px]" href="${item.url}" target="_blank" rel="noopener">
+            ? `<div><a class="active:scale-98 mb-3 grow-0 aspect-square flex justify-center items-center sm:p-3 p-1.5 border border-gray-100 group-hover:border-gray-200 transition-colors rounded-[3px]" href="${item.url}" target="_blank" rel="noopener">
                   <img src="${item.cover_image_url}" alt="${escapeHtml(item.title)}" loading="lazy" class="h-full object-contain ${item.type === 'artist' ? 'rounded-full' : 'rounded-[3px]'}">
                 </a></div>`
             : ''
@@ -338,7 +338,7 @@ function renderItemCards(listItems) {
                   : ''}
             </div>
             ${isOwner ? `<div class="h-6 items-center mt-3 pt-2 text-xs border-t border-gray-200 transition-opacity ">
-              <button class="active:scale-95 h-4 remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
+              <button class="hover:underline h-4 remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">
               <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" id="Delete-Bin-3--Streamline-Micro" height="16" width="16">
                 <desc>
                   Delete Bin 3 Streamline Icon: https://streamlinehq.com

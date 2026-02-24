@@ -199,7 +199,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
 
     itemsContainer.innerHTML = filtered.map(l =>
       `<div class="sm:[&>a]:opacity-0 hover:[&>a]:opacity-100 flex space-x-2 items-center w-full hover:bg-gray-50 transition-colors">
-        <button type="button" class="grow px-3 py-2 text-sm text-left cursor-pointer truncate ${l.id === selectedListId ? 'font-medium text-gray-800' : 'text-gray-500'}" data-list-id="${l.id}">
+        <button type="button" class="hover:text-gray-800 transition-colors grow px-3 py-2 text-sm text-left cursor-pointer truncate ${l.id === selectedListId ? 'font-medium text-gray-800' : 'text-gray-500'}" data-list-id="${l.id}">
           ${escapeHtml(l.name)}
         </button>
         <a href="/list.html?list=${l.slug}" class="w-6 h-6 transition-opacity flex items-center justify-center pr-3 text-gray-500 hover:text-gray-800 shrink-0">
