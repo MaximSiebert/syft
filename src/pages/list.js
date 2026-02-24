@@ -191,7 +191,7 @@ function loadList(user, list) {
     if (profile) {
       const creatorName = profile.display_name || profile.email || ''
       if (authorEl && creatorName) {
-        authorEl.innerHTML = `${profile.avatar_url ? `by <img src="${profile.avatar_url}" alt="" class="ml-1 w-5 h-5 rounded-full">` : ''} <span class="font-semibold text-gray-800 group-hover:underline">${escapeHtml(creatorName)}</span>`
+        authorEl.innerHTML = `${profile.avatar_url ? `by<img src="${profile.avatar_url}" alt="" class="ml-1 w-5 h-5 rounded-full">` : ''}<span class="font-medium group-hover:underline text-gray-500 hover:text-gray-800 transition-colors">${escapeHtml(creatorName)}</span>`
         authorEl.href = `/profile.html?id=${profile.id}`
       } else if (authorEl) {
         authorEl.innerHTML = ''

@@ -344,14 +344,14 @@ function renderListCard(list) {
     .slice(0, 9 - coverImages.length)
 
   const previewCircles = (coverImages.length > 0 || textItems.length > 0)
-    ? `<div class="flex gap-1.5 overflow-x-scroll px-3 mb-4 scrollbar-track-transparent scrollbar-thumb-transparent scrollbar-thin">
+    ? `<div class="flex gap-1.5 overflow-x-scroll px-3 scrollbar-track-transparent scrollbar-thumb-transparent scrollbar-thin">
         ${coverImages.map(item => `
-          <a href="${item.url}" target="_blank" rel="noopener" class="aspect-square flex justify-center items-center p-1 w-16 h-16 border border-gray-100 hover:border-gray-200 transition-colors rounded-[3px]">
+          <a href="${item.url}" target="_blank" rel="noopener" class="aspect-square flex justify-center items-center p-1 w-16 h-16 border border-gray-200 hover:border-gray-300 transition-colors rounded-[3px]">
             <img src="${item.cover_image_url}" alt="" loading="lazy" class="h-full object-contain rounded-[3px]">
           </a>
         `).join('')}
         ${textItems.map(item => `
-          <div class="aspect-square flex items-end p-1 w-16 h-16 border border-gray-100 transition-colors rounded-[3px]">
+          <div class="aspect-square flex items-end p-1 w-16 h-16 border border-gray-200 transition-colors rounded-[3px]">
             <p class="text-[10px] leading-3 text-balance font-medium text-gray-500 line-clamp-2 overflow-hidden text-ellipsis">${escapeHtml(item.title)}</p>
           </div>
         `).join('')}
@@ -359,11 +359,7 @@ function renderListCard(list) {
     : ''
 
   const profile = list.profiles
-  const creatorHtml = profile
-    ? profile.avatar_url
-      ? `<div class="pb-3 ml-3 mr-3 pt-2 text-xs border-t border-gray-200 transition-opacity"><a href="/profile.html?id=${profile.id}" class="text-xs font-medium text-gray-800 hover:underline">${escapeHtml(profile.display_name || profile.email)}</a></div>`
-      : `<div class="pb-3 pt-2 text-xs border-t border-gray-200 transition-opacity"><a href="/profile.html?id=${profile.id}" class="text-xs font-medium text-gray-800 hover:underline">${escapeHtml(profile.display_name || profile.email)}</a></div>`
-    : ''
+  const creatorHtml = `<div class="pb-3 ml-3 mr-3 text-xs transition-opacity"><a href="/profile.html?id=${profile.id}" class="text-xs font-medium text-gray-500 transition-colors hover:text-gray-800 hover:underline">${escapeHtml(profile.display_name || profile.email)}</a></div>`
 
   return `
     <div class="group hover:border-gray-300 border border-gray-200 bg-white transition-colors rounded-md flex flex-col justify-end h-full gap-1">
@@ -372,7 +368,7 @@ function renderListCard(list) {
           <a href="/list.html?list=${list.slug}" class="aspect-[5/2.8] flex items-end block hover:underline">${escapeHtml(list.name)}</a>
         </h3>
         <p class="px-3 text-xs font-medium text-gray-500 mb-3">${list.list_items[0].count} item${list.list_items[0].count === 1 ? '' : 's'}</p>
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between mb-3">
           <div class="flex items-center w-full overflow-hidden">
             ${previewCircles}
           </div>

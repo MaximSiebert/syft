@@ -30,7 +30,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
           <div id="list-picker-dropdown" class="group hidden absolute bottom-full mb-[1px] pb-1 sm:bg-transparent bg-gray-50 rounded-t-md left-[-1px] sm:right-auto right-[-1px] sm:w-full">
             <div class="bg-white border border-gray-200 group-hover:border-gray-300 transition-colors rounded-md overflow-hidden">
               <input type="text" id="list-picker-search" placeholder="Search lists..." class="h-12 w-full px-3 py-2 text-sm border-b border-gray-200 group-hover:border-gray-300 transition-colors outline-none placeholder:text-gray-500">
-              <div id="list-picker-items" class="overflow-y-auto max-h-[196px] py-2"></div>
+              <div id="list-picker-items" class="overflow-y-auto scrollbar-track-transparent scrollbar-thumb-transparent scrollbar-thin max-h-[196px] py-2"></div>
               <button type="button" id="list-picker-create" class="h-12 w-full px-3 py-2 text-sm text-left border-t border-gray-200 group-hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer">
                 New list +
               </button>
@@ -198,7 +198,17 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
     focusedIndex = -1
 
     itemsContainer.innerHTML = filtered.map(l =>
-      `<button type="button" class="w-full px-3 py-2 text-sm text-left hover:bg-gray-50 transition-colors cursor-pointer truncate ${l.id === selectedListId ? 'font-medium text-gray-800' : 'text-gray-500'}" data-list-id="${l.id}">${escapeHtml(l.name)}</button>`
+      `<div class="sm:[&>a]:opacity-0 hover:[&>a]:opacity-100 flex space-x-2 items-center w-full hover:bg-gray-50 transition-colors">
+        <button type="button" class="grow px-3 py-2 text-sm text-left cursor-pointer truncate ${l.id === selectedListId ? 'font-medium text-gray-800' : 'text-gray-500'}" data-list-id="${l.id}">
+          ${escapeHtml(l.name)}
+        </button>
+        <a href="/list.html?list=${l.slug}" class="w-6 h-6 transition-opacity flex items-center justify-center pr-3 text-gray-500 hover:text-gray-800 shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" height="12" width="12">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M5.4 6.75a1.35 1.35 0 1 0 0 -2.7 1.35 1.35 0 0 0 0 2.7Z" stroke-width="1.2"></path>
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M5.4 1.62C2.16 1.62 0.54 5.4 0.54 5.4S2.16 9.18 5.4 9.18 10.260000000000002 5.4 10.260000000000002 5.4 8.64 1.62 5.4 1.62Z" stroke-width="1.2"></path>
+          </svg>
+        </a>
+      </div>`
     ).join('')
 
     getItems().forEach(item => {
