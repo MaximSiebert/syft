@@ -323,7 +323,7 @@ function renderItemCards(listItems) {
       <div class="min-w-0" data-item-id="${listItem.id}">
         <div class="group hover:border-gray-300 border bg-white border-gray-200 transition-colors rounded-md p-3 h-full flex flex-col">
           ${item.cover_image_url
-            ? `<div><a class="active:scale-98 mb-3 grow-0 aspect-square flex justify-center items-center sm:p-3 p-1.5 border border-gray-100 group-hover:border-gray-200 transition-colors rounded-[3px]" href="${item.url}" target="_blank" rel="noopener">
+            ? `<div><a class="active:scale-99 mb-3 grow-0 aspect-square flex justify-center items-center sm:p-3 p-1.5 border border-gray-100 group-hover:border-gray-200 transition-colors rounded-[3px]" href="${item.url}" target="_blank" rel="noopener">
                   <img src="${item.cover_image_url}" alt="${escapeHtml(item.title)}" loading="lazy" class="h-full object-contain ${item.type === 'artist' ? 'rounded-full' : 'rounded-[3px]'}">
                 </a></div>`
             : ''
