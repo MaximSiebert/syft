@@ -30,7 +30,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
           <div id="list-picker-dropdown" class="group hidden absolute bottom-full mb-[1px] pb-1 sm:bg-transparent bg-gray-50 rounded-t-md left-[-1px] sm:right-auto right-[-1px] sm:w-full">
             <div class="bg-white border border-gray-200 group-hover:border-gray-300 transition-colors rounded-md overflow-hidden">
               <input type="text" id="list-picker-search" placeholder="Search lists..." class="h-12 w-full px-3 py-2 text-sm border-b border-gray-200 group-hover:border-gray-300 transition-colors outline-none placeholder:text-gray-500">
-              <div id="list-picker-items" class="overflow-y-auto scrollbar-track-transparent scrollbar-thumb-transparent scrollbar-thin max-h-[196px] py-2"></div>
+              <div id="list-picker-items" class="overflow-y-auto scrollbar-none max-h-[196px] py-2"></div>
               <button type="button" id="list-picker-create" class="h-12 w-full px-3 py-2 text-sm text-left border-t border-gray-200 group-hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer">
                 New list +
               </button>

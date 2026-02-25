@@ -344,7 +344,7 @@ function renderListCard(list) {
     .slice(0, 9 - coverImages.length)
 
   const previewCircles = (coverImages.length > 0 || textItems.length > 0)
-    ? `<div class="flex gap-1.5 overflow-x-scroll px-3 scrollbar-track-transparent scrollbar-thumb-transparent scrollbar-thin">
+    ? `<div class="flex space-x-1.5 overflow-x-auto px-3 scrollbar-none">
         ${coverImages.map(item => `
           <a href="${item.url}" target="_blank" rel="noopener" class="active:scale-97 aspect-square flex justify-center items-center p-1 w-20 h-20 border border-gray-200 hover:border-gray-300 transition-colors rounded-[3px]">
             <img src="${item.cover_image_url}" alt="" loading="lazy" class="h-full object-contain rounded-[3px]">
@@ -367,7 +367,7 @@ function renderListCard(list) {
         <h3 class="px-3 wrap-break-word text-pretty leading-5 pb-[3px] text-xl font-medium text-ellipsis line-clamp-3">
           <a href="/list.html?list=${list.slug}" class="aspect-[5/3.1] flex items-end block hover:underline">${escapeHtml(list.name)}</a>
         </h3>
-        <div class="flex items-center space-x-1 px-3 mb-3 text-gray-500">
+        <div class="flex items-center space-x-1 px-3 mb-2 text-gray-500">
           <p class="text-xs font-medium">${list.list_items[0].count} item${list.list_items[0].count === 1 ? '' : 's'}</p>
           <span>·</span>
           ${creatorHtml}
