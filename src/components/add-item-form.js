@@ -90,8 +90,8 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
       // Replace spinner with duplicate icon, turn red
       btn.innerHTML = duplicateIcon
       btn.removeAttribute('data-state')
-      btn.classList.replace('bg-orange-500', 'bg-red-500')
-      btn.classList.replace('hover:bg-orange-600', 'hover:bg-red-600')
+      btn.classList.replace('bg-orange-500', 'bg-red-600')
+      btn.classList.replace('hover:bg-orange-600', 'hover:bg-red-700')
 
       // Add shake animation
       const keyframes = [
@@ -112,8 +112,8 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
       setTimeout(() => {
         btn.innerHTML = plusIcon
         btn.removeAttribute('data-state')
-        btn.classList.replace('bg-red-500', 'bg-orange-500')
-        btn.classList.replace('hover:bg-red-600', 'hover:bg-orange-600')
+        btn.classList.replace('bg-red-600', 'bg-orange-500')
+        btn.classList.replace('hover:bg-red-700', 'hover:bg-orange-600')
         btn.disabled = false
         resolve()
       }, 800)
@@ -425,16 +425,16 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
       }
       localStorage.setItem('syft_last_list_id', selectedListId)
       submitBtn.dataset.state = 'success'
-      submitBtn.classList.replace('bg-orange-500', 'bg-green-500')
-      submitBtn.classList.replace('hover:bg-orange-600', 'hover:bg-green-600')
+      submitBtn.classList.replace('bg-orange-500', 'bg-lime-600')
+      submitBtn.classList.replace('hover:bg-orange-600', 'hover:bg-lime-700')
       addInput.value = ''
       charCounter.classList.add('hidden')
       addInput.removeAttribute('maxlength')
       if (onItemAdded) onItemAdded(selectedListId)
       setTimeout(() => {
         submitBtn.removeAttribute('data-state')
-        submitBtn.classList.replace('bg-green-500', 'bg-orange-500')
-        submitBtn.classList.replace('hover:bg-green-600', 'hover:bg-orange-600')
+        submitBtn.classList.replace('bg-lime-600', 'bg-orange-500')
+        submitBtn.classList.replace('hover:bg-lime-700', 'hover:bg-orange-600')
         submitBtn.disabled = false
       }, 1500)
     } catch (error) {
