@@ -5,7 +5,7 @@ import { showToast, inlineConfirm } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
 import { setupScrollHide } from '../utils/scroll.js'
 import { renderNavUser } from '../utils/nav.js'
-import { initQuickSwitcher, trackRecentList, updateRecentListName } from '../components/quick-switcher.js'
+import { initQuickSwitcher, trackRecentList, trackRecentItem, updateRecentListName } from '../components/quick-switcher.js'
 import Sortable from 'sortablejs'
 
 const PAGE_SIZE = 60
@@ -91,6 +91,7 @@ async function init() {
   })
 
   setupObserver()
+  setupItemTracking()
   setupRemoveHandler()
   setupInlineEditing()
   setupDragReorder()
@@ -155,6 +156,9 @@ async function init() {
         input.disabled = true
         try {
           await deleteList(currentListId)
+          clearCache('discover_v3')
+          if (_listData?.user_id) clearCache('profile:' + _listData.user_id)
+          sessionStorage.setItem('syft_pending_toast', 'List deleted')
           window.location.href = '/profile.html'
         } catch (error) {
           showToast(error.message, 'error')
@@ -323,14 +327,14 @@ function renderItemCards(listItems) {
       <div class="min-w-0" data-item-id="${listItem.id}">
         <div class="group hover:border-gray-300 border bg-white border-gray-200 transition-colors rounded-md p-3 h-full flex flex-col">
           ${item.cover_image_url
-            ? `<div><a class="active:scale-99 mb-3 grow-0 aspect-square flex justify-center items-center sm:p-3 p-1.5 border border-gray-100 group-hover:border-gray-200 transition-colors rounded-[3px]" href="${item.url}" target="_blank" rel="noopener">
+            ? `<div><a class="active:scale-99 mb-3 grow-0 aspect-square flex justify-center items-center sm:p-3 p-1.5 border border-gray-100 group-hover:border-gray-200 transition-colors rounded-[3px]" href="${item.url}" target="_blank" rel="noopener" data-track-item data-item-url="${escapeHtml(item.url)}" data-item-cover="${escapeHtml(item.cover_image_url)}" data-item-title="${escapeHtml(item.title)}" data-item-type="${item.type || ''}">
                   <img src="${item.cover_image_url}" alt="${escapeHtml(item.title)}" loading="lazy" class="h-full object-contain ${item.type === 'artist' ? 'rounded-full' : 'rounded-[3px]'}">
                 </a></div>`
             : ''
           }
           <div class="justify-between flex flex-col grow">
             <div>
-              <h3 class="item-title leading-5 wrap-break-word text-pretty text-ellipsis line-clamp-2 font-medium mb-1 sm:text-base text-sm outline-none" data-item-id="${item.id}" data-original="${escapeHtml(item.title)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${isOwner ? escapeHtml(item.title) : `<a href="${item.url}" target="_blank" rel="noopener" class="hover:underline">${escapeHtml(item.title)}</a>`}</h3>
+              <h3 class="item-title leading-5 wrap-break-word text-pretty text-ellipsis line-clamp-2 font-medium mb-1 sm:text-base text-sm outline-none" data-item-id="${item.id}" data-original="${escapeHtml(item.title)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${isOwner ? escapeHtml(item.title) : `<a href="${item.url}" target="_blank" rel="noopener" class="hover:underline" data-track-item data-item-url="${escapeHtml(item.url)}" data-item-cover="${escapeHtml(item.cover_image_url || '')}" data-item-title="${escapeHtml(item.title)}" data-item-type="${item.type || ''}">${escapeHtml(item.title)}</a>`}</h3>
               ${item.price
                 ? `<p class="item-desc leading-4 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2 outline-none" data-item-id="${item.id}" data-field="price" data-original="${escapeHtml(item.price)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.price)}</p>`
                 : item.creator
@@ -391,6 +395,20 @@ async function loadItems() {
     showToast(error.message, 'error')
     sentinel.classList.add('hidden')
   }
+}
+
+function setupItemTracking() {
+  const container = document.getElementById('items-container')
+  container.addEventListener('click', e => {
+    const link = e.target.closest('[data-track-item]')
+    if (!link) return
+    trackRecentItem({
+      url: link.dataset.itemUrl,
+      cover_image_url: link.dataset.itemCover || null,
+      title: link.dataset.itemTitle,
+      type: link.dataset.itemType
+    })
+  })
 }
 
 function setupRemoveHandler() {

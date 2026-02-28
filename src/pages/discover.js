@@ -5,7 +5,7 @@ import { showToast } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
 import { setupScrollHide } from '../utils/scroll.js'
 import { renderNavUser } from '../utils/nav.js'
-import { initQuickSwitcher } from '../components/quick-switcher.js'
+import { initQuickSwitcher, trackRecentItem } from '../components/quick-switcher.js'
 
 const PAGE_SIZE = 60
 
@@ -37,6 +37,17 @@ async function init() {
   renderNavUser(document.getElementById('user-email'), user)
   setupObserver()
   setupScrollHide()
+
+  document.getElementById('explore-container').addEventListener('click', e => {
+    const link = e.target.closest('[data-track-item]')
+    if (!link) return
+    trackRecentItem({
+      url: link.dataset.itemUrl,
+      cover_image_url: link.dataset.itemCover || null,
+      title: link.dataset.itemTitle,
+      type: link.dataset.itemType
+    })
+  })
 
   if (user) {
     initQuickSwitcher()
@@ -346,7 +357,7 @@ function renderListCard(list) {
   const previewCircles = (coverImages.length > 0 || textItems.length > 0)
     ? `<div class="flex space-x-1.5 overflow-x-auto px-3 scrollbar-none">
         ${coverImages.map(item => `
-          <a href="${item.url}" target="_blank" rel="noopener" class="active:scale-97 aspect-square flex justify-center items-center p-1 w-20 h-20 border border-gray-200 hover:border-gray-300 transition-colors rounded-[3px]">
+          <a href="${item.url}" target="_blank" rel="noopener" class="active:scale-97 aspect-square flex justify-center items-center p-1 w-20 h-20 border border-gray-200 hover:border-gray-300 transition-colors rounded-[3px]" data-track-item data-item-url="${escapeHtml(item.url)}" data-item-cover="${escapeHtml(item.cover_image_url)}" data-item-title="${escapeHtml(item.title)}" data-item-type="${item.type || ''}">
             <img src="${item.cover_image_url}" alt="" loading="lazy" class="h-full object-contain rounded-[3px]">
           </a>
         `).join('')}

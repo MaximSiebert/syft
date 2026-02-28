@@ -39,6 +39,12 @@ function renderProfile(profile) {
 }
 
 async function init() {
+  const pendingToast = sessionStorage.getItem('syft_pending_toast')
+  if (pendingToast) {
+    sessionStorage.removeItem('syft_pending_toast')
+    showToast(pendingToast)
+  }
+
   // Compute cache key synchronously so we can render from cache before awaiting auth
   const syncUserId = getSessionUserIdSync()
   _cacheKey = 'profile:' + (_profileId || syncUserId || 'own')
@@ -112,7 +118,7 @@ async function init() {
 
 async function resetAndLoad() {
   isLoading = true
-  clearCache('discover')
+  clearCache('discover_v3')
   if (_cacheKey) clearCache(_cacheKey)
   offset = 0
   hasMore = true

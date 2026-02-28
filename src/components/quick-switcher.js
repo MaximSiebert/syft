@@ -3,6 +3,8 @@ import { getSessionUserIdSync } from '../lib/auth.js'
 
 const RECENT_KEY = 'syft_recent_lists'
 const MAX_RECENT = 6
+const RECENT_ITEMS_KEY = 'syft_recent_items'
+const MAX_RECENT_ITEMS = 9
 
 function escapeHtml(text) {
   const div = document.createElement('div')
@@ -17,6 +19,16 @@ export function trackRecentList({ id, slug, name, count, coverImages }) {
     const filtered = recent.filter(l => l.id !== id)
     filtered.unshift({ id, slug, name, count, coverImages })
     localStorage.setItem(RECENT_KEY, JSON.stringify(filtered.slice(0, MAX_RECENT)))
+  } catch {}
+}
+
+export function trackRecentItem({ url, cover_image_url, title, type }) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(RECENT_ITEMS_KEY) || '[]')
+    const recent = Array.isArray(parsed) ? parsed : []
+    const filtered = recent.filter(i => i.url !== url)
+    filtered.unshift({ url, cover_image_url, title, type })
+    localStorage.setItem(RECENT_ITEMS_KEY, JSON.stringify(filtered.slice(0, MAX_RECENT_ITEMS)))
   } catch {}
 }
 
@@ -46,6 +58,30 @@ export function initQuickSwitcher() {
       const parsed = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]')
       return Array.isArray(parsed) ? parsed : []
     } catch { return [] }
+  }
+
+  function getRecentItems() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(RECENT_ITEMS_KEY) || '[]')
+      return Array.isArray(parsed) ? parsed : []
+    } catch { return [] }
+  }
+
+  function renderRecentItemsStrip() {
+    const items = getRecentItems()
+    if (items.length === 0) return ''
+    const circles = items.map(item =>
+      item.cover_image_url
+        ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" class="active:scale-97 aspect-square flex justify-center items-center p-1 w-20 h-20 shrink-0 border border-gray-200 hover:border-gray-300 transition-colors rounded-[3px]">
+            <img src="${escapeHtml(item.cover_image_url)}" alt="" loading="lazy" class="h-full object-contain rounded-[3px]">
+          </a>`
+        : `<div class="aspect-square flex items-end p-1 w-20 h-20 shrink-0 border border-gray-200 rounded-[3px]">
+            <p class="text-[10px] leading-3 text-balance font-medium text-gray-500 line-clamp-2 overflow-hidden text-ellipsis">${escapeHtml(item.title)}</p>
+          </div>`
+    ).join('')
+    return `<div class="py-3 border-b border-gray-100">
+      <div class="flex space-x-1.5 overflow-x-auto px-3 scrollbar-none">${circles}</div>
+    </div>`
   }
 
   function renderItem(list) {
@@ -92,10 +128,11 @@ export function initQuickSwitcher() {
   function renderResults(filter) {
     const lists = getDisplayLists(filter)
     focusedIndex = lists.length > 0 ? 0 : -1
+    const strip = filter ? '' : renderRecentItemsStrip()
     if (lists.length === 0) {
-      resultsContainer.innerHTML = '<p class="px-4 py-6 text-sm text-gray-400 text-center">No lists found</p>'
+      resultsContainer.innerHTML = strip + '<p class="px-4 py-6 text-sm text-gray-400 text-center">No lists found</p>'
     } else {
-      resultsContainer.innerHTML = lists.map(renderItem).join('')
+      resultsContainer.innerHTML = strip + lists.map(renderItem).join('')
     }
     updateFocus()
   }
@@ -125,7 +162,7 @@ export function initQuickSwitcher() {
         <div id="quick-switcher" class="shadow-xl bg-white rounded-md w-full max-w-md overflow-hidden mx-4">
           <input id="qs-search" type="text" placeholder="Jump to list..." autocomplete="off"
             class="w-full px-4 py-3 text-sm border-b border-gray-200 outline-none placeholder:text-gray-500">
-          <div id="qs-results" class="overflow-y-auto max-h-[360px]"></div>
+          <div id="qs-results" class="overflow-y-auto max-h-[380px]"></div>
         </div>
       </div>
     `)
