@@ -38,10 +38,12 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
           </div>
         </div>
         <div class="w-10 pr-2 h-12 flex items-center justify-center rounded-r-full transition-all duration-300">
-          <button type="submit" class="active:scale-95 text-sm block text-[#fafafa] bg-orange-500 hover:bg-orange-600 transition-colors w-8 h-8 flex shrink-0 justify-center items-center rounded-full cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" height="12" width="12">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M5.4 0.54v9.72" stroke-width="1.2"></path>
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.54 5.4h9.72" stroke-width="1.2"></path>
+          <button type="submit" class="active:scale-95 text-sm block text-[#fafafa] bg-orange-500 hover:bg-orange-600 transition-colors duration-300 w-8 h-8 flex shrink-0 justify-center items-center rounded-full cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="-0.6 -0.6 12 12" height="12" width="12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+              <path class="icon-plus-v" d="M5.4 0.54v9.72"></path>
+              <path class="icon-plus-h" d="M0.54 5.4h9.72"></path>
+              <circle class="icon-spinner" cx="5.4" cy="5.4" r="4.32"></circle>
+              <path class="icon-check" d="M1.35 5.4l2.7 2.7 5.4-5.4"></path>
             </svg>
           </button>
         </div>
@@ -87,6 +89,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
 
       // Replace spinner with duplicate icon, turn red
       btn.innerHTML = duplicateIcon
+      btn.removeAttribute('data-state')
       btn.classList.replace('bg-orange-500', 'bg-red-500')
       btn.classList.replace('hover:bg-orange-600', 'hover:bg-red-600')
 
@@ -108,6 +111,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
       // After shake, reset to plus icon and orange
       setTimeout(() => {
         btn.innerHTML = plusIcon
+        btn.removeAttribute('data-state')
         btn.classList.replace('bg-red-500', 'bg-orange-500')
         btn.classList.replace('hover:bg-red-600', 'hover:bg-orange-600')
         btn.disabled = false
@@ -379,15 +383,6 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
   const submitBtn = form.querySelector('button[type="submit"]')
   const plusIcon = submitBtn.innerHTML
 
-  const spinnerIcon = `<svg class="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-    <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
-    <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
-  </svg>`
-
-  const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.6 -0.6 12 12" height="12" width="12">
-    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M1.35 5.4l2.7 2.7 5.4-5.4" stroke-width="1.2"></path>
-  </svg>`
-
   // Slide form into view on first login
   if (shouldAnimate) {
     requestAnimationFrame(() => {
@@ -404,7 +399,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
     if (!value || (!selectedListId && !pendingListName)) return
 
     submitBtn.disabled = true
-    submitBtn.innerHTML = spinnerIcon
+    submitBtn.dataset.state = 'loading'
     try {
       if (!selectedListId && pendingListName) {
         const list = await createList(pendingListName)
@@ -429,7 +424,7 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
         await addTextItemToList(value, selectedListId)
       }
       localStorage.setItem('syft_last_list_id', selectedListId)
-      submitBtn.innerHTML = checkIcon
+      submitBtn.dataset.state = 'success'
       submitBtn.classList.replace('bg-orange-500', 'bg-green-500')
       submitBtn.classList.replace('hover:bg-orange-600', 'hover:bg-green-600')
       addInput.value = ''
@@ -437,14 +432,14 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
       addInput.removeAttribute('maxlength')
       if (onItemAdded) onItemAdded(selectedListId)
       setTimeout(() => {
-        submitBtn.innerHTML = plusIcon
+        submitBtn.removeAttribute('data-state')
         submitBtn.classList.replace('bg-green-500', 'bg-orange-500')
         submitBtn.classList.replace('hover:bg-green-600', 'hover:bg-orange-600')
         submitBtn.disabled = false
       }, 1500)
     } catch (error) {
       showToast(error.message, 'error')
-      submitBtn.innerHTML = plusIcon
+      submitBtn.removeAttribute('data-state')
       submitBtn.disabled = false
     }
   })

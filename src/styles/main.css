@@ -84,6 +84,55 @@ body.scroll-hidden #add-item-form {
   opacity: 0.9;
 }
 
+/* Submit button icon state machine */
+.icon-plus-v, .icon-plus-h {
+  stroke-dasharray: 9.72;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.2s ease, opacity 0.2s ease;
+}
+
+.icon-spinner {
+  stroke-dasharray: 6.8 20.3;
+  opacity: 0;
+  transform-origin: 5.4px 5.4px;
+  transition: opacity 0.2s ease;
+}
+
+.icon-check {
+  stroke-dasharray: 11.5;
+  stroke-dashoffset: 11.5;
+  opacity: 0;
+  transition: stroke-dashoffset 0.35s ease, opacity 0.15s ease;
+}
+
+button[data-state="loading"] .icon-plus-v,
+button[data-state="loading"] .icon-plus-h,
+button[data-state="success"] .icon-plus-v,
+button[data-state="success"] .icon-plus-h {
+  stroke-dashoffset: 9.72;
+  opacity: 0;
+}
+
+button[data-state="loading"] .icon-spinner {
+  opacity: 1;
+  animation: submit-spin 0.75s linear infinite;
+}
+
+button[data-state="success"] .icon-spinner {
+  opacity: 0;
+  animation: none;
+}
+
+button[data-state="success"] .icon-check {
+  stroke-dashoffset: 0;
+  opacity: 1;
+  transition-delay: 0.1s;
+}
+
+@keyframes submit-spin {
+  to { transform: rotate(360deg); }
+}
+
 html.dark {
   color-scheme: dark;
   --color-white: #18181b;
