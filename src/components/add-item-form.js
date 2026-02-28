@@ -85,8 +85,10 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M0.7200000000000001 10.68912V2.16c0 -0.38191680000000006 0.15171408000000003 -0.7481808000000001 0.42176592000000007 -1.0182340800000003C1.4118192000000003 0.8717140800000002 1.7780832000000002 0.7200000000000001 2.16 0.7200000000000001h8.52912" stroke-width="1.6"></path>
       </svg>`
 
-      // Replace spinner with duplicate icon
+      // Replace spinner with duplicate icon, turn red
       btn.innerHTML = duplicateIcon
+      btn.classList.replace('bg-orange-500', 'bg-red-500')
+      btn.classList.replace('hover:bg-orange-600', 'hover:bg-red-600')
 
       // Add shake animation
       const keyframes = [
@@ -103,9 +105,11 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
       }
       btn.animate(keyframes, timing)
 
-      // After shake, reset to plus icon
+      // After shake, reset to plus icon and orange
       setTimeout(() => {
         btn.innerHTML = plusIcon
+        btn.classList.replace('bg-red-500', 'bg-orange-500')
+        btn.classList.replace('hover:bg-red-600', 'hover:bg-orange-600')
         btn.disabled = false
         resolve()
       }, 800)
@@ -426,12 +430,16 @@ export async function initAddItemForm({ defaultListId, onItemAdded, onListCreate
       }
       localStorage.setItem('syft_last_list_id', selectedListId)
       submitBtn.innerHTML = checkIcon
+      submitBtn.classList.replace('bg-orange-500', 'bg-green-500')
+      submitBtn.classList.replace('hover:bg-orange-600', 'hover:bg-green-600')
       addInput.value = ''
       charCounter.classList.add('hidden')
       addInput.removeAttribute('maxlength')
       if (onItemAdded) onItemAdded(selectedListId)
       setTimeout(() => {
         submitBtn.innerHTML = plusIcon
+        submitBtn.classList.replace('bg-green-500', 'bg-orange-500')
+        submitBtn.classList.replace('hover:bg-green-600', 'hover:bg-orange-600')
         submitBtn.disabled = false
       }, 1500)
     } catch (error) {
