@@ -228,6 +228,12 @@ export function initQuickSwitcher() {
     }))
   }).catch(() => {})
 
+  const searchBtn = document.getElementById('search-btn')
+  if (searchBtn) {
+    searchBtn.classList.remove('hidden')
+    searchBtn.addEventListener('click', () => open())
+  }
+
   document.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault()

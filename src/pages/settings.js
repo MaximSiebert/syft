@@ -2,11 +2,13 @@ import { signOut, deleteAccount, getCurrentUser } from '../lib/auth.js'
 import { getProfile, updateProfile, migrateAvatarIfNeeded } from '../lib/db.js'
 import { requireAuth } from '../utils/guards.js'
 import { showToast, inlineConfirm } from '../utils/ui.js'
+import { initQuickSwitcher } from '../components/quick-switcher.js'
 
 async function init() {
   const session = await requireAuth()
   if (!session) return
 
+  initQuickSwitcher()
   const user = await getCurrentUser()
   const avatarEl = document.getElementById('user-avatar')
   const avatarUrl = user.user_metadata?.avatar_url

@@ -98,14 +98,13 @@ async function init() {
 
   setupObserver()
   setupScrollHide()
+  initQuickSwitcher()
 
   if (isOwnProfile) {
     // Show owner-only controls
     document.querySelectorAll('.create-list-btn').forEach(btn => btn.classList.remove('hidden'))
     const settingsBtn = document.getElementById('settings-btn')
     if (settingsBtn) settingsBtn.classList.remove('hidden')
-
-    initQuickSwitcher()
     document.querySelector('main').classList.replace('lg:pb-8', 'sm:pb-18')
     document.querySelector('main').classList.replace('pb-4', 'pb-[122px]')
     setupCreateButtons()
