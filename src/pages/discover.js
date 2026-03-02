@@ -51,6 +51,13 @@ async function init() {
 
   if (user) {
     initQuickSwitcher()
+    const searchBtn = document.getElementById('search-btn')
+    if (searchBtn) {
+      searchBtn.classList.remove('hidden')
+      searchBtn.addEventListener('click', () => {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }))
+      })
+    }
     document.querySelector('main').classList.replace('lg:pb-8', 'sm:pb-18')
     document.querySelector('main').classList.replace('pb-4', 'pb-[122px]')
     await initAddItemForm({

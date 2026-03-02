@@ -1,4 +1,4 @@
-import { getLists } from '../lib/db.js'
+import { getAllLists } from '../lib/db.js'
 import { getSessionUserIdSync } from '../lib/auth.js'
 
 const RECENT_KEY = 'syft_recent_lists'
@@ -91,10 +91,16 @@ export function initQuickSwitcher() {
           `<span class="w-6 h-6 rounded-full border-2 border-white overflow-hidden bg-gray-100"><img src="${escapeHtml(url)}" alt="" loading="lazy" class="w-full h-full object-cover"></span>`
         ).join('')}</span>`
       : ''
+    const creatorLine = !list.isOwner && list.creator
+      ? `<span class="text-xs text-gray-400 truncate block">${escapeHtml(list.creator)}</span>`
+      : ''
 
     return `<a href="/list.html?list=${escapeHtml(list.slug)}" data-qs-item class="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 transition-colors cursor-pointer">
-      <span class="text-sm font-medium truncate">${escapeHtml(list.name)}</span>
-      <span class="flex items-center gap-1.5 shrink-0 ml-3">
+      <span class="min-w-0 mr-3">
+        <span class="text-sm font-medium truncate block">${escapeHtml(list.name)}</span>
+        ${creatorLine}
+      </span>
+      <span class="flex items-center gap-1.5 shrink-0">
         <span class="text-xs text-gray-400">${list.count ?? 0} ${(list.count ?? 0) === 1 ? 'item' : 'items'}</span>
         ${circles}
       </span>
@@ -122,7 +128,8 @@ export function initQuickSwitcher() {
     const merged = [...recentMapped, ...rest]
     if (!filter) return merged.slice(0, MAX_RECENT)
     const lower = filter.toLowerCase()
-    return merged.filter(l => l.name.toLowerCase().includes(lower))
+    const filtered = merged.filter(l => l.name.toLowerCase().includes(lower))
+    return filtered.sort((a, b) => (b.isOwner ? 1 : 0) - (a.isOwner ? 1 : 0))
   }
 
   function renderResults(filter) {
@@ -155,13 +162,14 @@ export function initQuickSwitcher() {
   }
 
   function open() {
+    document.body.style.overflow = 'hidden'
     if (overlay) { overlay.classList.remove('hidden'); searchInput.value = ''; renderResults(''); searchInput.focus(); return }
 
     document.body.insertAdjacentHTML('beforeend', `
-      <div id="quick-switcher-overlay" class="fixed inset-0 bg-gray-200/50 z-50 flex items-start justify-center pt-[20vh]">
-        <div id="quick-switcher" class="shadow-xl bg-white rounded-md w-full max-w-md overflow-hidden mx-4">
-          <input id="qs-search" type="text" placeholder="Jump to list..." autocomplete="off"
-            class="w-full px-4 py-3 text-sm border-b border-gray-200 outline-none placeholder:text-gray-500">
+      <div id="quick-switcher-overlay" class="fixed inset-0 bg-gray-200/50 z-50 flex items-end sm:items-start justify-center sm:pt-[20vh]">
+        <div id="quick-switcher" class="shadow-xl bg-white rounded-t-md sm:rounded-md w-full sm:max-w-md overflow-hidden sm:mx-4">
+          <input id="qs-search" type="text" placeholder="Search lists..." autocomplete="off"
+            class="w-full px-4 h-12 sm:h-auto sm:py-3 text-sm border-b border-gray-200 outline-none placeholder:text-gray-500">
           <div id="qs-results" class="overflow-y-auto max-h-[380px]"></div>
         </div>
       </div>
@@ -203,21 +211,22 @@ export function initQuickSwitcher() {
 
   function close() {
     if (overlay) overlay.classList.add('hidden')
+    document.body.style.overflow = ''
   }
 
-  // Prefetch all lists on page load so data is ready when Cmd+K is pressed
+  // Prefetch all public lists on page load so data is ready when Cmd+K is pressed
   const userId = getSessionUserIdSync()
-  if (userId) {
-    listsPromise = getLists(userId).then(lists => {
-      allLists = lists.map(l => ({
-        id: l.id,
-        slug: l.slug,
-        name: l.name,
-        count: l.list_items[0].count,
-        coverImages: (l.preview_items || []).map(pi => pi.items?.cover_image_url).filter(Boolean).slice(0, 3)
-      }))
-    }).catch(() => {})
-  }
+  listsPromise = getAllLists().then(lists => {
+    allLists = lists.map(l => ({
+      id: l.id,
+      slug: l.slug,
+      name: l.name,
+      count: l.list_items[0].count,
+      coverImages: (l.preview_items || []).map(pi => pi.items?.cover_image_url).filter(Boolean).slice(0, 3),
+      isOwner: l.user_id === userId,
+      creator: l.profiles?.display_name || l.profiles?.email || null
+    }))
+  }).catch(() => {})
 
   document.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {

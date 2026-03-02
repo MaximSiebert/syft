@@ -10,10 +10,11 @@ async function init() {
   const user = await getCurrentUser()
   const avatarEl = document.getElementById('user-avatar')
   const avatarUrl = user.user_metadata?.avatar_url
+  const userIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="-0.8 -0.8 16 16" height="12" width="12"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M7.2 6.48a2.88 2.88 0 1 0 0-5.76 2.88 2.88 0 0 0 0 5.76Z" stroke-width="1.6"></path><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M13.31 13.68a6.48 6.48 0 0 0-12.22 0h12.22Z" stroke-width="1.6"></path></svg>`
   if (avatarUrl) {
-    avatarEl.innerHTML = `<a href="/profile.html" class="ml-1 block w-10 h-10 flex items-center justify-center hover:bg-white block rounded-full hover:border-gray-300 border-gray-200 border"><img src="${avatarUrl}" alt="" class="w-8 h-8 rounded-full"></a>`
+    avatarEl.innerHTML = `<a href="/profile.html" class="ml-1 block w-10 h-10 flex items-center justify-center hover:bg-white rounded-full hover:border-gray-300 border-gray-200 border"><img src="${avatarUrl}" alt="" class="w-8 h-8 rounded-full"></a>`
   } else {
-    avatarEl.innerHTML = `<a href="/profile.html" class="text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors px-3 h-10 flex items-center text-center rounded-md">${user.email}</a>`
+    avatarEl.innerHTML = `<a href="/profile.html" class="text-sm hover:border-gray-300 border border-gray-200 bg-gray-50 hover:bg-white transition-colors w-10 h-10 flex items-center justify-center rounded-full">${userIconSvg}</a>`
   }
 
   let currentName = ''
@@ -26,7 +27,8 @@ async function init() {
     if (profile.avatar_url) {
       avatarEl.innerHTML = `<a href="/profile.html" class="ml-1 block w-10 h-10 flex items-center justify-center hover:bg-white block rounded-full hover:border-gray-300 border-gray-200 border"><img src="${profile.avatar_url}" alt="" class="w-8 h-8 rounded-full"></a>`
     }
-    try { localStorage.setItem('syft_nav_avatar', profile.avatar_url || avatarUrl) } catch {}
+    const bestAvatar = profile.avatar_url || avatarUrl || null
+    try { bestAvatar ? localStorage.setItem('syft_nav_avatar', bestAvatar) : localStorage.removeItem('syft_nav_avatar') } catch {}
 
     // Lazily migrate external avatar to Supabase Storage
     if (profile.avatar_url && !profile.avatar_url.includes('/storage/v1/object/public/')) {

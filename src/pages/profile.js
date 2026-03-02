@@ -260,6 +260,8 @@ function setupCreateButtons() {
         input.disabled = true
         try {
           const list = await createList(name)
+          if (_cacheKey) clearCache(_cacheKey)
+          clearCache('discover_v3')
           window.location.href = `/list.html?list=${list.slug}`
         } catch (error) {
           showToast(error.message, 'error')

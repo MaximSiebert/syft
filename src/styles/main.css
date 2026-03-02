@@ -133,6 +133,16 @@ button[data-state="success"] .icon-check {
   to { transform: rotate(360deg); }
 }
 
+@media (max-width: 639px) {
+  @keyframes qs-slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+  #quick-switcher {
+    animation: qs-slide-up 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+}
+
 html.dark {
   color-scheme: dark;
   --color-white: #18181b;
