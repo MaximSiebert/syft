@@ -5,7 +5,7 @@ import { showToast, inlineConfirm } from '../utils/ui.js'
 import { initAddItemForm } from '../components/add-item-form.js'
 import { setupScrollHide } from '../utils/scroll.js'
 import { renderNavUser } from '../utils/nav.js'
-import { initQuickSwitcher, trackRecentList, trackRecentItem, updateRecentListName } from '../components/quick-switcher.js'
+import { initQuickSwitcher, trackRecentList, trackRecentItem, removeRecentItem, updateRecentListName } from '../components/quick-switcher.js'
 import Sortable from 'sortablejs'
 
 const PAGE_SIZE = 60
@@ -419,8 +419,11 @@ function setupRemoveHandler() {
     if (!btn) return
     if (!inlineConfirm(btn)) return
 
+    const itemUrl = btn.parentElement.closest('[data-item-id]')?.querySelector('[data-track-item]')?.dataset.itemUrl
+
     try {
       await removeItemFromList(btn.dataset.itemId)
+      if (itemUrl) removeRecentItem(itemUrl)
       showToast('Item removed', 'success')
       await resetAndLoadItems()
       updateSearchPlaceholder()

@@ -32,6 +32,14 @@ export function trackRecentItem({ url, cover_image_url, title, type }) {
   } catch {}
 }
 
+export function removeRecentItem(url) {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(RECENT_ITEMS_KEY) || '[]')
+    const recent = Array.isArray(parsed) ? parsed : []
+    localStorage.setItem(RECENT_ITEMS_KEY, JSON.stringify(recent.filter(i => i.url !== url)))
+  } catch {}
+}
+
 export function updateRecentListName(id, name, slug) {
   try {
     const parsed = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]')
@@ -229,10 +237,7 @@ export function initQuickSwitcher() {
   }).catch(() => {})
 
   const searchBtn = document.getElementById('search-btn')
-  if (searchBtn) {
-    searchBtn.classList.remove('hidden')
-    searchBtn.addEventListener('click', () => open())
-  }
+  if (searchBtn) searchBtn.addEventListener('click', () => open())
 
   document.addEventListener('keydown', (e) => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
