@@ -171,7 +171,7 @@ export function initQuickSwitcher() {
 
   function open() {
     document.body.style.overflow = 'hidden'
-    if (overlay) { overlay.classList.remove('hidden'); searchInput.value = ''; renderResults(''); searchInput.focus(); return }
+    if (overlay) { overlay.classList.remove('hidden'); searchInput.value = ''; renderResults(''); if (window.innerWidth >= 640) searchInput.focus(); return }
 
     document.body.insertAdjacentHTML('beforeend', `
       <div id="quick-switcher-overlay" class="fixed inset-0 bg-gray-200/50 z-50 flex items-end sm:items-start justify-center sm:pt-[20vh]">
@@ -188,7 +188,7 @@ export function initQuickSwitcher() {
     resultsContainer = document.getElementById('qs-results')
 
     renderResults('')
-    searchInput.focus()
+    if (window.innerWidth >= 640) searchInput.focus()
 
     searchInput.addEventListener('input', () => renderResults(searchInput.value))
 
