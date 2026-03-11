@@ -142,7 +142,7 @@ export function initQuickSwitcher() {
 
   function renderResults(filter) {
     const lists = getDisplayLists(filter)
-    focusedIndex = lists.length > 0 ? 0 : -1
+    focusedIndex = -1
     const strip = filter ? '' : renderRecentItemsStrip()
     if (lists.length === 0) {
       resultsContainer.innerHTML = strip + '<p class="px-4 py-6 text-sm text-gray-400 text-center">No lists found</p>'
@@ -169,6 +169,78 @@ export function initQuickSwitcher() {
     })
   }
 
+  function setupDragToDismiss(modal) {
+    let startY = 0
+    let lastY = 0
+    let isDragging = false
+
+    function beginDrag(y) {
+      startY = y
+      lastY = y
+      isDragging = true
+      modal.style.transition = 'none'
+      overlay.style.transition = 'none'
+      document.addEventListener('touchmove', onTouchMove, { passive: true })
+      document.addEventListener('touchend', onTouchEnd)
+    }
+
+    function onTouchMove(e) {
+      if (!isDragging) return
+      lastY = e.touches[0].clientY
+      const delta = Math.max(0, lastY - startY)
+      modal.style.transform = `translateY(${delta}px)`
+      const progress = Math.min(delta / (modal.offsetHeight * 0.5), 1)
+      overlay.style.opacity = String(1 - progress * 0.7)
+    }
+
+    function onTouchEnd() {
+      if (!isDragging) return
+      isDragging = false
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', onTouchEnd)
+
+      const delta = Math.max(0, lastY - startY)
+      const threshold = modal.offsetHeight * 0.35
+
+      if (delta > threshold) {
+        modal.style.transition = 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)'
+        overlay.style.transition = 'opacity 0.25s ease'
+        modal.style.transform = 'translateY(100%)'
+        overlay.style.opacity = '0'
+        setTimeout(() => {
+          modal.style.transition = ''
+          modal.style.transform = ''
+          overlay.style.transition = ''
+          overlay.style.opacity = ''
+          close()
+        }, 300)
+      } else {
+        modal.style.transition = 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)'
+        overlay.style.transition = 'opacity 0.3s ease'
+        modal.style.transform = ''
+        overlay.style.opacity = ''
+        setTimeout(() => {
+          modal.style.transition = ''
+          overlay.style.transition = ''
+        }, 300)
+      }
+    }
+
+    modal.addEventListener('touchstart', (e) => {
+      if (window.innerWidth >= 640) return
+      if (isDragging) return
+      // Always drag from handle
+      if (e.target.closest('#qs-drag-handle')) {
+        beginDrag(e.touches[0].clientY)
+        return
+      }
+      // Also drag from anywhere (except search input) when results are scrolled to top
+      if (!e.target.closest('#qs-search') && resultsContainer && resultsContainer.scrollTop === 0) {
+        beginDrag(e.touches[0].clientY)
+      }
+    }, { passive: true })
+  }
+
   function open() {
     document.body.style.overflow = 'hidden'
     if (overlay) {
@@ -188,6 +260,9 @@ export function initQuickSwitcher() {
     document.body.insertAdjacentHTML('beforeend', `
       <div id="quick-switcher-overlay" class="fixed inset-0 bg-gray-200/50 z-50 flex items-end sm:items-start justify-center sm:pt-[20vh]">
         <div id="quick-switcher" class="shadow-xl bg-white rounded-t-md sm:rounded-md w-full sm:max-w-md overflow-hidden sm:mx-4">
+          <div id="qs-drag-handle" class="sm:hidden flex justify-center items-center py-3 select-none">
+            <div class="w-10 h-1 bg-gray-300 rounded-full"></div>
+          </div>
           <input id="qs-search" type="text" placeholder="Search lists..." autocomplete="off"
             class="w-full px-4 h-12 sm:h-auto sm:py-3 text-sm border-b border-gray-200 outline-none placeholder:text-gray-500">
           <div id="qs-results" class="overflow-y-auto max-h-[380px]"></div>
@@ -201,6 +276,8 @@ export function initQuickSwitcher() {
 
     renderResults('')
     if (window.innerWidth >= 640) searchInput.focus()
+
+    setupDragToDismiss(document.getElementById('quick-switcher'))
 
     searchInput.addEventListener('input', () => renderResults(searchInput.value))
 
