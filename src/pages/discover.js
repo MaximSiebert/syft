@@ -49,8 +49,9 @@ async function init() {
     })
   })
 
+  initQuickSwitcher()
+
   if (user) {
-    initQuickSwitcher()
     document.querySelector('main').classList.replace('lg:pb-8', 'sm:pb-18')
     document.querySelector('main').classList.replace('pb-4', 'pb-[122px]')
     await initAddItemForm({
