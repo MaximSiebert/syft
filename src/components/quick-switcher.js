@@ -171,7 +171,19 @@ export function initQuickSwitcher() {
 
   function open() {
     document.body.style.overflow = 'hidden'
-    if (overlay) { overlay.classList.remove('hidden'); searchInput.value = ''; renderResults(''); if (window.innerWidth >= 640) searchInput.focus(); return }
+    if (overlay) {
+      const qs = document.getElementById('quick-switcher')
+      overlay.style.animation = 'none'
+      if (qs) qs.style.animation = 'none'
+      overlay.offsetHeight // trigger reflow to restart animations
+      overlay.style.animation = ''
+      if (qs) qs.style.animation = ''
+      overlay.classList.remove('hidden')
+      searchInput.value = ''
+      renderResults('')
+      if (window.innerWidth >= 640) searchInput.focus()
+      return
+    }
 
     document.body.insertAdjacentHTML('beforeend', `
       <div id="quick-switcher-overlay" class="fixed inset-0 bg-gray-200/50 z-50 flex items-end sm:items-start justify-center sm:pt-[20vh]">

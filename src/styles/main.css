@@ -133,6 +133,27 @@ button[data-state="success"] .icon-check {
   to { transform: rotate(360deg); }
 }
 
+@keyframes qs-overlay-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes qs-modal-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#quick-switcher-overlay {
+  animation: qs-overlay-fade 0.15s ease forwards;
+}
+
+@media (min-width: 640px) {
+  #quick-switcher {
+    animation: qs-modal-in 0.18s ease both;
+    animation-delay: 0.05s;
+  }
+}
+
 @media (max-width: 639px) {
   @keyframes qs-slide-up {
     from { transform: translateY(100%); }
