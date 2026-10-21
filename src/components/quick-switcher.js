@@ -170,23 +170,45 @@ export function initQuickSwitcher() {
   }
 
   function setupDragToDismiss(modal) {
+    let startX = 0
     let startY = 0
     let lastY = 0
     let isDragging = false
+    // Direction isn't known until the finger moves; horizontal swipes (e.g. the recent items strip) cancel the drag
+    let axisLocked = false
 
-    function beginDrag(y) {
+    function beginDrag(x, y) {
+      startX = x
       startY = y
       lastY = y
       isDragging = true
-      modal.style.transition = 'none'
-      overlay.style.transition = 'none'
+      axisLocked = false
       document.addEventListener('touchmove', onTouchMove, { passive: true })
       document.addEventListener('touchend', onTouchEnd)
     }
 
+    function cancelDrag() {
+      isDragging = false
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', onTouchEnd)
+    }
+
     function onTouchMove(e) {
       if (!isDragging) return
-      lastY = e.touches[0].clientY
+      const touch = e.touches[0]
+      if (!axisLocked) {
+        const dx = Math.abs(touch.clientX - startX)
+        const dy = Math.abs(touch.clientY - startY)
+        if (dx < 8 && dy < 8) return
+        if (dx > dy) {
+          cancelDrag()
+          return
+        }
+        axisLocked = true
+        modal.style.transition = 'none'
+        overlay.style.transition = 'none'
+      }
+      lastY = touch.clientY
       const delta = Math.max(0, lastY - startY)
       modal.style.transform = `translateY(${delta}px)`
       const progress = Math.min(delta / (modal.offsetHeight * 0.5), 1)
@@ -195,9 +217,8 @@ export function initQuickSwitcher() {
 
     function onTouchEnd() {
       if (!isDragging) return
-      isDragging = false
-      document.removeEventListener('touchmove', onTouchMove)
-      document.removeEventListener('touchend', onTouchEnd)
+      cancelDrag()
+      if (!axisLocked) return
 
       const delta = Math.max(0, lastY - startY)
       const threshold = modal.offsetHeight * 0.35
@@ -230,15 +251,46 @@ export function initQuickSwitcher() {
       if (window.innerWidth >= 640) return
       if (isDragging) return
       // Always drag from handle
+      const { clientX, clientY } = e.touches[0]
       if (e.target.closest('#qs-drag-handle')) {
-        beginDrag(e.touches[0].clientY)
+        beginDrag(clientX, clientY)
         return
       }
       // Also drag from anywhere (except search input) when results are scrolled to top
       if (!e.target.closest('#qs-search') && resultsContainer && resultsContainer.scrollTop === 0) {
-        beginDrag(e.touches[0].clientY)
+        beginDrag(clientX, clientY)
       }
     }, { passive: true })
+  }
+
+  // On mobile the keyboard covers the bottom of the page instead of shrinking it,
+  // so pin the overlay to the visible area to keep the panel above the keyboard
+  function fitToVisualViewport() {
+    const vv = window.visualViewport
+    if (!overlay || !vv) return
+    if (window.innerWidth >= 640) {
+      overlay.style.top = ''
+      overlay.style.height = ''
+      overlay.style.bottom = ''
+      resultsContainer.style.maxHeight = ''
+      return
+    }
+    overlay.style.top = `${vv.offsetTop}px`
+    overlay.style.height = `${vv.height}px`
+    overlay.style.bottom = 'auto'
+    // Leave a gap above the panel so the overlay can still be tapped to close
+    const modal = document.getElementById('quick-switcher')
+    const chromeHeight = modal.offsetHeight - resultsContainer.offsetHeight
+    resultsContainer.style.maxHeight = `${Math.max(120, Math.min(380, vv.height - chromeHeight - 48))}px`
+  }
+
+  function trackVisualViewport(enabled) {
+    const vv = window.visualViewport
+    if (!vv) return
+    const method = enabled ? 'addEventListener' : 'removeEventListener'
+    vv[method]('resize', fitToVisualViewport)
+    vv[method]('scroll', fitToVisualViewport)
+    if (enabled) fitToVisualViewport()
   }
 
   function open() {
@@ -253,6 +305,7 @@ export function initQuickSwitcher() {
       overlay.classList.remove('hidden')
       searchInput.value = ''
       renderResults('')
+      trackVisualViewport(true)
       if (window.innerWidth >= 640) searchInput.focus()
       return
     }
@@ -275,6 +328,7 @@ export function initQuickSwitcher() {
     resultsContainer = document.getElementById('qs-results')
 
     renderResults('')
+    trackVisualViewport(true)
     if (window.innerWidth >= 640) searchInput.focus()
 
     setupDragToDismiss(document.getElementById('quick-switcher'))
@@ -308,6 +362,7 @@ export function initQuickSwitcher() {
 
   function close() {
     if (overlay) overlay.classList.add('hidden')
+    trackVisualViewport(false)
     document.body.style.overflow = ''
   }
 
