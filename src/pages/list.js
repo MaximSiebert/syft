@@ -339,7 +339,9 @@ function renderItemCards(listItems) {
                 ? `<p class="item-desc leading-4 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2 outline-none" data-item-id="${item.id}" data-field="price" data-original="${escapeHtml(item.price)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.price)}</p>`
                 : item.creator
                   ? `<p class="item-desc leading-4 sm:text-sm text-xs text-gray-500 text-ellipsis line-clamp-2 outline-none" data-item-id="${item.id}" data-field="creator" data-original="${escapeHtml(item.creator)}" ${isOwner ? 'contenteditable="true" style="cursor:text"' : ''}>${escapeHtml(item.creator)}</p>`
-                  : ''}
+                  : isOwner
+                    ? `<p class="item-desc leading-4 sm:text-sm text-xs text-gray-500 text-ellipsis not-empty:line-clamp-2 outline-none min-h-4 empty:before:content-['Add_subtitle'] empty:before:text-gray-300 empty:before:opacity-0 group-hover:empty:before:opacity-100 empty:before:transition-opacity focus:before:hidden" data-item-id="${item.id}" data-field="creator" data-original="" contenteditable="true" style="cursor:text"></p>`
+                    : ''}
             </div>
             ${isOwner ? `<div class="h-6 items-center mt-3 pt-2 text-xs border-t border-gray-200 transition-opacity ">
               <button class="hover:underline h-4 remove-btn text-xs font-medium text-gray-300 hover:text-gray-800 transition-colors cursor-pointer" data-item-id="${listItem.id}" title="Remove">

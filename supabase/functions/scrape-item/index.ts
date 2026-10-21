@@ -525,7 +525,11 @@ async function scrapeYouTubeMusicAlbum(url: string): Promise<Partial<ItemData>> 
   }
 
   if (!creator && tags.description) {
-    const match = tags.description.match(/^Listen to .+? by (.+?) on YouTube Music/i)
+    // Current format: "Album • Artist" (also "EP • Artist", "Single • Artist • 2024")
+    const bulletMatch = tags.description.match(/^(?:Album|EP|Single|Playlist)\s*•\s*([^•]+)/i)
+    // Legacy format: "Listen to ALBUM by Artist on YouTube Music"
+    const listenMatch = tags.description.match(/^Listen to .+? by (.+?) on YouTube Music/i)
+    const match = bulletMatch || listenMatch
     if (match) creator = match[1].trim()
   }
 
